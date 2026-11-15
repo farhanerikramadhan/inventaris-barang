@@ -33,7 +33,7 @@ export default function AppLayout() {
   const { theme, toggleTheme } = useThemeStore();
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // State untuk HP
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [timeNow, setTimeNow] = useState(new Date());
   const menuRef = useRef(null);
 
@@ -52,7 +52,6 @@ export default function AppLayout() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Tutup semua menu saat pindah halaman
   useEffect(() => {
     setShowProfileMenu(false);
     setIsMobileMenuOpen(false);
@@ -100,10 +99,8 @@ export default function AppLayout() {
     <div className="mc-layout">
       <LayoutStyles />
       
-      {/* Kirim props isOpen dan onClose */}
       <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
-      {/* Overlay gelap di HP */}
       {isMobileMenuOpen && (
         <div 
           className="mc-mobile-overlay" 
@@ -114,8 +111,6 @@ export default function AppLayout() {
       <div className="mc-layout-main">
         <header className="mc-topbar">
           <div className="mc-breadcrumb">
-            
-            {/* Tombol Hamburger untuk HP */}
             <button 
               className="mc-mobile-toggle"
               onClick={() => setIsMobileMenuOpen(true)}
@@ -241,7 +236,8 @@ export default function AppLayout() {
         </header>
 
         <main className="mc-main">
-          <div key={pathname} className="mc-main-inner">
+          {/* ✅ KEY DIHAPUS: Agar transisi antar komponen tidak memicu blank */}
+          <div className="mc-main-inner">
             <Outlet />
           </div>
         </main>
@@ -268,7 +264,6 @@ function LayoutStyles() {
         min-width: 0;
       }
       
-      /* Tombol Hamburger HP */
       .mc-mobile-toggle {
         display: none;
         background: transparent;
@@ -280,7 +275,6 @@ function LayoutStyles() {
         cursor: pointer;
       }
       
-      /* Overlay Gelap HP */
       .mc-mobile-overlay {
         position: fixed;
         inset: 0;

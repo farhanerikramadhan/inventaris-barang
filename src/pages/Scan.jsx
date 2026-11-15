@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   ScanLine, AlertCircle, CheckCircle2, X,
   Copy, Check, History, Trash2, Bug, FileText, Sparkles
@@ -14,6 +14,21 @@ export default function Scan() {
   const [showDebug, setShowDebug] = useState(false);
 
   const lastResultRef = useRef({ text: "", at: 0 });
+
+  // ✅ TAMBAHAN: Pastikan tidak ada sisa proses saat pindah halaman
+  useEffect(() => {
+    return () => {
+      console.log("Keluar dari halaman Scan...");
+      // Memaksa browser untuk melepas izin kamera secara paksa (jika masih nyangkut)
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(stream => {
+            stream.getTracks().forEach(track => track.stop());
+          })
+          .catch(() => {});
+      }
+    };
+  }, []);
 
   const handleResult = useCallback((rawText) => {
     const text = String(rawText ?? "").trim();

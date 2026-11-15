@@ -1,0 +1,246 @@
+/* ============================================================
+   SHARED MODAL STYLES
+   Digunakan oleh: AddUnitModal, StockInForm, StockOutForm, DeleteUnitModal
+   Import di komponen: import "../../styles/modal.css";
+============================================================ */
+
+/* ============ BACKDROP ============ */
+.mc-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+  animation: mc-backdrop-in 0.2s ease;
+}
+@keyframes mc-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ============ MODAL SHELL ============ */
+.mc-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 24px 64px -16px rgba(0, 0, 0, 0.45);
+  width: 100%;
+  max-width: 440px;
+  max-height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: mc-modal-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes mc-modal-in {
+  from { opacity: 0; transform: scale(0.95) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ============ HEADER ============ */
+.mc-modal-head {
+  position: relative;
+  background: linear-gradient(135deg, var(--accent) 0%, #7F1D1D 100%);
+  padding: 1rem 1.25rem;
+  color: white;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.mc-modal-head-glow {
+  position: absolute;
+  top: -60%; right: -15%;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.18) 0%, transparent 70%);
+  filter: blur(24px);
+  pointer-events: none;
+}
+.mc-modal-head-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 1;
+}
+.mc-modal-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mc-modal-head-text {
+  flex: 1;
+  min-width: 0;
+}
+.mc-modal-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin-bottom: 0.15rem;
+}
+.mc-modal-sub {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mc-modal-close {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.mc-modal-close:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.25);
+  transform: rotate(90deg);
+}
+.mc-modal-close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============ BODY ============ */
+.mc-modal-body {
+  padding: 1.25rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+/* ============ FOOTER ============ */
+.mc-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  background: var(--background);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.mc-modal-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  min-width: 0;
+}
+.mc-modal-summary svg {
+  color: var(--success, #10B981);
+  flex-shrink: 0;
+}
+.mc-modal-summary strong {
+  color: var(--text-main);
+  font-weight: 800;
+}
+.mc-modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* ============ BUTTONS ============ */
+.mc-btn-ghost,
+.mc-btn-primary,
+.mc-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border-radius: 9px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+.mc-btn-ghost {
+  background: var(--surface);
+  color: var(--text-main);
+  border-color: var(--border);
+}
+.mc-btn-ghost:hover:not(:disabled) {
+  background: var(--background);
+  border-color: var(--text-muted);
+}
+.mc-btn-primary {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 4px 12px -2px rgba(185, 28, 28, 0.3);
+}
+.mc-btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -4px rgba(185, 28, 28, 0.4);
+}
+.mc-btn-danger {
+  background: #EF4444;
+  color: white;
+  box-shadow: 0 4px 12px -2px rgba(239, 68, 68, 0.3);
+}
+.mc-btn-danger:hover:not(:disabled) {
+  background: #DC2626;
+  transform: translateY(-1px);
+}
+.mc-btn-ghost:disabled,
+.mc-btn-primary:disabled,
+.mc-btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============ SPINNER ============ */
+.mc-spin {
+  animation: mc-spin 0.8s linear infinite;
+}
+@keyframes mc-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============ MOBILE ============ */
+@media (max-width: 480px) {
+  .mc-modal-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .mc-modal-summary {
+    justify-content: center;
+  }
+  .mc-modal-actions {
+    justify-content: stretch;
+  }
+  .mc-modal-actions > button {
+    flex: 1;
+  }
+}

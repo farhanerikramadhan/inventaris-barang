@@ -20,9 +20,8 @@ import Locations from "./pages/Locations";
 import Users from "./pages/Users";
 import ActivityLog from "./pages/ActivityLog";
 import Print from "./pages/Print";
-import Reports from "./pages/Reports";   // ← BARU
+import Reports from "./pages/Reports";
 import ReportsPrint from "./pages/ReportsPrint";
-
 
 export default function App() {
   const init = useAuthStore((s) => s.init);
@@ -48,7 +47,7 @@ export default function App() {
           <Route path="/units/:id" element={<UnitDetailPage />} />
           <Route path="/scan" element={<Scan />} />
           <Route path="/print" element={<Print />} />
-          <Route path="/reports" element={<Reports />} />   {/* ← BARU */}
+          <Route path="/reports" element={<Reports />} />
         </Route>
       </Route>
 
@@ -70,9 +69,7 @@ export default function App() {
 
       {/* ================= FALLBACK ================= */}
       <Route path="*" element={<Navigate to="/" replace />} />
-
       <Route path="/reports/print" element={<ReportsPrint />} />
-
     </Routes>
   );
 }

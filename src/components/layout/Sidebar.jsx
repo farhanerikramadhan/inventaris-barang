@@ -3,7 +3,7 @@ import { NavLink, Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, Package, ScanLine, Tag, MapPin,
   Users, History, LogOut, Boxes, Sparkles,
-  FileBarChart, PanelLeftClose, PanelLeftOpen
+  FileBarChart, PanelLeftClose, PanelLeftOpen, X
 } from "lucide-react";
 import { useAuthStore } from "../../stores/authStore";
 import RoleBadge from "../ui/RoleBadge";
@@ -45,7 +45,7 @@ const menuGroups = [
 
 const STORAGE_KEY = "sidebar_collapsed";
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
   const { profile, logout } = useAuthStore();
   const { pathname } = useLocation();
   const [collapsed, setCollapsed] = useState(() => {
@@ -58,6 +58,14 @@ export default function Sidebar() {
     return () => clearTimeout(t);
   }, []);
 
+  // Tutup sidebar HP saat pindah rute
+  useEffect(() => {
+    if (isOpen && onClose) {
+      onClose();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
   const toggleCollapse = () => {
     const next = !collapsed;
     setCollapsed(next);
@@ -65,8 +73,13 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className={`mc-side ${collapsed ? "is-collapsed" : ""} ${mounted ? "is-mounted" : ""}`}>
+    <aside className={`mc-side ${collapsed ? "is-collapsed" : ""} ${mounted ? "is-mounted" : ""} ${isOpen ? "is-mobile-open" : ""}`}>
       <SidebarStyles />
+
+      {/* Tombol Close (Hanya muncul di HP) */}
+      <button className="mc-side-mobile-close" onClick={onClose}>
+        <X size={20} />
+      </button>
 
       {/* ================= LOGO ================= */}
       <div className="mc-side-logo-wrap">
@@ -171,9 +184,6 @@ export default function Sidebar() {
   );
 }
 
-/* ============================================================
-   Styles
-============================================================ */
 function SidebarStyles() {
   return (
     <style>{`
@@ -187,15 +197,46 @@ function SidebarStyles() {
         flex-direction: column;
         flex-shrink: 0;
         position: relative;
-        z-index: 20;
+        z-index: 50; /* Ditinggikan untuk mobile */
         transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
                     background-color 0.3s,
-                    border-color 0.3s;
+                    border-color 0.3s,
+                    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         overflow: hidden;
       }
       .mc-side.is-collapsed { width: 76px; }
+
+      /* Mobile Close Button */
+      .mc-side-mobile-close {
+        display: none;
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: var(--background);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        border-radius: 8px;
+        padding: 0.4rem;
+        cursor: pointer;
+        z-index: 60;
+      }
+
       @media (max-width: 768px) {
-        .mc-side { display: none; }
+        .mc-side { 
+          position: fixed;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          transform: translateX(-100%);
+          box-shadow: 4px 0 24px rgba(0,0,0,0.2);
+          width: 280px; /* Sedikit lebih lebar di HP */
+        }
+        .mc-side.is-collapsed { width: 280px; } /* Abaikan collapse di HP */
+        .mc-side.is-mobile-open {
+          transform: translateX(0);
+        }
+        .mc-side-mobile-close { display: flex; align-items: center; justify-content: center; }
+        .mc-side-toggle { display: none; } /* Sembunyikan tombol collapse di HP */
       }
 
       /* ============ LOGO ============ */

@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
-  ChevronRight, User, Settings, LogOut,
+  ChevronRight, User, Settings, LogOut, Menu,
   Clock, Shield, Sun, Moon, Home, ChevronDown
 } from "lucide-react";
 import Sidebar from "./Sidebar";
-import NotificationBell from "./NotificationBell";   // ← BARU
+import NotificationBell from "./NotificationBell";
 import { useAuthStore } from "../../stores/authStore";
 import { useThemeStore } from "../../stores/themeStore";
 
@@ -33,16 +33,15 @@ export default function AppLayout() {
   const { theme, toggleTheme } = useThemeStore();
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // State untuk HP
   const [timeNow, setTimeNow] = useState(new Date());
   const menuRef = useRef(null);
 
-  // Update jam tiap menit
   useEffect(() => {
     const timer = setInterval(() => setTimeNow(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
-  // Tutup dropdown saat klik di luar
   useEffect(() => {
     function handleClickOutside(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -53,12 +52,12 @@ export default function AppLayout() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Tutup dropdown saat pindah halaman
+  // Tutup semua menu saat pindah halaman
   useEffect(() => {
     setShowProfileMenu(false);
+    setIsMobileMenuOpen(false);
   }, [pathname]);
 
-  // Breadcrumb title
   const pageInfo = useMemo(() => {
     if (pageTitles[pathname]) return pageTitles[pathname];
     if (pathname.startsWith("/items/")) return { title: "Detail Barang" };
@@ -66,7 +65,6 @@ export default function AppLayout() {
     return { title: "Inventaris" };
   }, [pathname]);
 
-  // Breadcrumb root (kategori halaman)
   const sectionRoot = useMemo(() => {
     if (pathname.startsWith("/items") || pathname.startsWith("/units")) return { label: "Inventaris", path: "/items" };
     if (pathname.startsWith("/categories")) return { label: "Master Data", path: "/categories" };
@@ -101,13 +99,31 @@ export default function AppLayout() {
   return (
     <div className="mc-layout">
       <LayoutStyles />
-      <Sidebar />
+      
+      {/* Kirim props isOpen dan onClose */}
+      <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+
+      {/* Overlay gelap di HP */}
+      {isMobileMenuOpen && (
+        <div 
+          className="mc-mobile-overlay" 
+          onClick={() => setIsMobileMenuOpen(false)}
+        ></div>
+      )}
 
       <div className="mc-layout-main">
-        {/* ================= TOP BAR ================= */}
         <header className="mc-topbar">
-          {/* ── Kiri: Breadcrumb ── */}
           <div className="mc-breadcrumb">
+            
+            {/* Tombol Hamburger untuk HP */}
+            <button 
+              className="mc-mobile-toggle"
+              onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="Buka Menu"
+            >
+              <Menu size={20} />
+            </button>
+
             <div className="mc-breadcrumb-line">
               {sectionRoot ? (
                 <>
@@ -129,10 +145,7 @@ export default function AppLayout() {
             </div>
           </div>
 
-          {/* ── Kanan: Actions ── */}
           <div className="mc-actions">
-
-            {/* Tanggal & Jam */}
             <div className="mc-clock" title={`${formattedDate} · ${formattedTime} WIB`}>
               <Clock size={13} className="mc-clock-icon" />
               <div className="mc-clock-body">
@@ -141,10 +154,8 @@ export default function AppLayout() {
               </div>
             </div>
 
-            {/* Divider */}
             <div className="mc-divider" />
 
-            {/* Toggle tema */}
             <button
               onClick={toggleTheme}
               className="mc-icon-btn"
@@ -155,13 +166,10 @@ export default function AppLayout() {
               </span>
             </button>
 
-            {/* Notifikasi — auto dari activity_logs */}
             <NotificationBell />
 
-            {/* Divider */}
             <div className="mc-divider" />
 
-            {/* Profil Dropdown */}
             <div className="mc-profile-wrap" ref={menuRef}>
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -184,7 +192,6 @@ export default function AppLayout() {
 
               {showProfileMenu && (
                 <div className="mc-dropdown">
-                  {/* Header */}
                   <div className="mc-dropdown-head">
                     <div className="mc-dropdown-avatar">
                       {initials}
@@ -198,7 +205,6 @@ export default function AppLayout() {
                     </div>
                   </div>
 
-                  {/* Menu items */}
                   <div className="mc-dropdown-body">
                     <button
                       onClick={() => navigate("/dashboard")}
@@ -217,7 +223,6 @@ export default function AppLayout() {
                     </button>
                   </div>
 
-                  {/* Logout */}
                   <div className="mc-dropdown-footer">
                     <button
                       onClick={handleLogout}
@@ -235,7 +240,6 @@ export default function AppLayout() {
           </div>
         </header>
 
-        {/* ================= MAIN CONTENT ================= */}
         <main className="mc-main">
           <div key={pathname} className="mc-main-inner">
             <Outlet />
@@ -246,11 +250,9 @@ export default function AppLayout() {
   );
 }
 
-/* Styles — sama persis dengan sebelumnya */
 function LayoutStyles() {
   return (
     <style>{`
-      /* ... (copy CSS dari file sebelumnya, tidak berubah) ... */
       .mc-layout {
         display: flex;
         min-height: 100vh;
@@ -265,6 +267,33 @@ function LayoutStyles() {
         flex-direction: column;
         min-width: 0;
       }
+      
+      /* Tombol Hamburger HP */
+      .mc-mobile-toggle {
+        display: none;
+        background: transparent;
+        border: none;
+        color: var(--text-main);
+        padding: 0.4rem;
+        margin-right: 0.5rem;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      
+      /* Overlay Gelap HP */
+      .mc-mobile-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(2px);
+        z-index: 40;
+        animation: mc-fade-in 0.2s ease-out;
+      }
+
+      @media (max-width: 768px) {
+        .mc-mobile-toggle { display: flex; align-items: center; justify-content: center; }
+      }
+
       .mc-topbar {
         background: color-mix(in srgb, var(--surface) 95%, transparent);
         backdrop-filter: blur(12px);

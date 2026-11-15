@@ -1185,10 +1185,6 @@ export default function Reports() {
     </div>
   );
 }
-
-/* ============================================================
-   Styles
-============================================================ */
 function ReportStyles() {
   return (
     <style>{`
@@ -1239,6 +1235,8 @@ function ReportStyles() {
         .mc-title { font-size: 1.5rem; }
         .mc-title-icon { width: 36px; height: 36px; }
         .mc-sub { margin-left: 0; }
+        .mc-head-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; width: 100%; }
+        .mc-head-actions > button { width: 100%; justify-content: center; }
       }
       .mc-head-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
       .mc-btn-primary, .mc-btn-secondary {
@@ -1275,7 +1273,10 @@ function ReportStyles() {
 
       /* STAT */
       .mc-stat-grid {
-        display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;
+        display: grid; grid-template-columns: 1fr; gap: 0.75rem;
+      }
+      @media (min-width: 640px) {
+        .mc-stat-grid { grid-template-columns: repeat(2, 1fr); }
       }
       @media (min-width: 900px) {
         .mc-stat-grid { grid-template-columns: repeat(4, 1fr); }
@@ -1352,12 +1353,15 @@ function ReportStyles() {
         display: inline-flex; align-items: center; gap: 0.35rem;
         background: var(--background); border: 1.5px solid var(--border);
         border-radius: 8px; padding: 0.35rem 0.7rem;
+        flex: 1; /* Membuat filter memanjang di HP */
+        min-width: 120px;
       }
       .mc-filter-group svg { color: var(--text-muted); flex-shrink: 0; }
       .mc-filter-group select {
         background: transparent; border: none; color: var(--text-main);
         font-size: 0.78rem; font-weight: 600;
         font-family: inherit; cursor: pointer; outline: none;
+        width: 100%;
       }
       .mc-filter-reset {
         display: inline-flex; align-items: center; gap: 0.3rem;
@@ -1366,12 +1370,16 @@ function ReportStyles() {
         border: 1px solid var(--accent-border);
         font-size: 0.72rem; font-weight: 700;
         cursor: pointer; font-family: inherit; transition: all 0.2s;
+        justify-content: center;
       }
       .mc-filter-reset:hover { background: var(--accent); color: white; }
       .mc-filter-count {
         font-size: 0.72rem; font-weight: 700;
         color: var(--text-muted); margin-left: auto;
         padding: 0.35rem 0.7rem; background: var(--background); border-radius: 6px;
+      }
+      @media (max-width: 640px) {
+        .mc-filter-count { width: 100%; text-align: center; margin-left: 0; margin-top: 0.5rem; }
       }
 
       /* TABS */
@@ -1413,10 +1421,15 @@ function ReportStyles() {
         border: 1px solid var(--border);
         border-radius: 16px; padding: 1.25rem;
         box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        overflow: hidden; /* Penting agar tabel bisa discroll */
+      }
+      @media (max-width: 640px) {
+        .mc-card { padding: 0.85rem; }
       }
       .mc-card-head {
         display: flex; align-items: center; justify-content: space-between;
         margin-bottom: 1rem; gap: 1rem;
+        flex-wrap: wrap;
       }
       .mc-card-title {
         display: flex; align-items: center; gap: 0.5rem;
@@ -1432,23 +1445,26 @@ function ReportStyles() {
       .mc-empty { padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.88rem; font-style: italic; }
       .mc-empty-small { padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.88rem; }
 
-      /* TABLE SCROLL */
+      /* TABLE SCROLL - KUNCI PERBAIKAN DI HP */
       .mc-table-scroll {
         overflow-x: auto; overflow-y: auto;
         max-height: 65vh;
         border-radius: 12px; position: relative;
+        -webkit-overflow-scrolling: touch; /* Scroll halus di iOS */
       }
       .mc-table-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
       .mc-table-scroll::-webkit-scrollbar-track { background: transparent; }
       .mc-table-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
       .mc-table-scroll::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-      .mc-table-responsive { overflow-x: auto; }
+      .mc-table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
       .mc-table {
         width: 100%; border-collapse: collapse; font-size: 0.82rem;
-        table-layout: fixed;
+        min-width: 800px; /* MEMAKSA TABEL LEBAR DI HP AGAR BISA DISCROLL */
       }
+      .mc-table-detail { min-width: 900px; }
+      
       .mc-table thead { background: var(--background); border-bottom: 1.5px solid var(--border); }
       .mc-table-scroll .mc-table thead th {
         position: sticky; top: 0; z-index: 2;
@@ -1642,6 +1658,9 @@ function ReportStyles() {
         border: 1px solid var(--border);
         border-radius: 10px;
         flex-wrap: wrap;
+      }
+      @media (max-width: 640px) {
+        .mc-mini-pagination { flex-direction: column; align-items: center; gap: 0.5rem; }
       }
       .mc-mini-pagination-info {
         font-size: 0.72rem;

@@ -19,7 +19,7 @@ export default function DeleteItemModal({ item, onClose, onSuccess }) {
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [confirmText, setConfirmText] = useState("");
+  const [isConfirmed, setIsConfirmed] = useState(false); // State centang persetujuan
 
   useEffect(() => {
     const handler = (e) => {
@@ -32,9 +32,6 @@ export default function DeleteItemModal({ item, onClose, onSuccess }) {
       document.body.style.overflow = "";
     };
   }, [saving, onClose]);
-
-  const confirmRequired = item.name;
-  const isConfirmed = confirmText.trim().toLowerCase() === confirmRequired.toLowerCase();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -111,7 +108,7 @@ export default function DeleteItemModal({ item, onClose, onSuccess }) {
           )}
 
           <div className="mc-del-grid">
-            {/* KOLOM KIRI: Info */}
+            {/* KOLOM KIRI: Info & Peringatan */}
             <div className="mc-del-col">
               <div className="mc-del-warning-box">
                 <div className="mc-del-warning-icon">
@@ -181,26 +178,23 @@ export default function DeleteItemModal({ item, onClose, onSuccess }) {
                 />
               </div>
 
-              <div className="mc-del-field mc-del-field-confirm">
-                <label className="mc-del-label danger">
-                  <AlertCircle size={13} />
-                  Konfirmasi
-                </label>
-                <p className="mc-del-confirm-hint">
-                  Ketik <code>{confirmRequired}</code> untuk melanjutkan
-                </p>
-                <div className={`mc-del-input-wrap ${isConfirmed ? "is-valid" : ""}`}>
+              {/* ✅ KONFIRMASI CENTANG (Bukan ketik nama) */}
+              <div className="mc-del-checkbox-wrap">
+                <label className={`mc-del-checkbox-label ${isConfirmed ? "is-checked" : ""}`}>
                   <input
-                    type="text"
-                    value={confirmText}
-                    onChange={(e) => setConfirmText(e.target.value)}
-                    placeholder={confirmRequired}
+                    type="checkbox"
+                    checked={isConfirmed}
+                    onChange={(e) => setIsConfirmed(e.target.checked)}
                     disabled={saving}
-                    autoComplete="off"
-                    className="mc-del-input-confirm"
+                    className="mc-del-checkbox-input"
                   />
-                  {isConfirmed && <CheckCircle2 size={16} className="mc-del-check" />}
-                </div>
+                  <div className="mc-del-checkbox-box">
+                    {isConfirmed && <CheckCircle2 size={16} />}
+                  </div>
+                  <span className="mc-del-checkbox-text">
+                    Saya mengerti dan yakin untuk menghapus <strong>{item.name}</strong> secara permanen.
+                  </span>
+                </label>
               </div>
             </div>
           </div>
@@ -212,7 +206,7 @@ export default function DeleteItemModal({ item, onClose, onSuccess }) {
             {isConfirmed ? (
               <span className="text-danger"><AlertTriangle size={14} /> Barang siap dihapus permanen</span>
             ) : (
-              <span><Info size={14} /> Ketik nama barang untuk konfirmasi</span>
+              <span><Info size={14} /> Centang persetujuan untuk melanjutkan</span>
             )}
           </div>
           <div className="mc-del-footer-actions">
@@ -355,8 +349,6 @@ function DeleteModalStyles() {
         font-size: 0.8rem; font-weight: 700; color: var(--text-main);
       }
       .mc-del-label svg { color: var(--text-muted); }
-      .mc-del-label.danger { color: #DC2626; }
-      .mc-del-label.danger svg { color: #DC2626; }
       .mc-del-label .required { color: #EF4444; }
       .mc-del-label .optional { font-weight: 500; color: var(--text-muted); font-size: 0.75rem; }
 
@@ -375,33 +367,55 @@ function DeleteModalStyles() {
       }
       .mc-del-select:disabled, .mc-del-textarea:disabled { opacity: 0.6; cursor: not-allowed; }
 
-      /* CONFIRM INPUT */
-      .mc-del-field-confirm { margin-top: 0.5rem; }
-      .mc-del-confirm-hint { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.4rem; }
-      .mc-del-confirm-hint code {
-        font-family: 'JetBrains Mono', monospace;
-        font-weight: 800; color: #DC2626;
-        background: rgba(239,68,68,0.1);
-        padding: 0.1rem 0.35rem; border-radius: 4px;
+      /* ✅ CHECKBOX KONFIRMASI */
+      .mc-del-checkbox-wrap {
+        background: rgba(239, 68, 68, 0.05);
+        border: 1px dashed rgba(239, 68, 68, 0.3);
+        border-radius: 10px;
+        padding: 0.85rem 1rem;
+        margin-top: 0.25rem;
+        transition: all 0.2s;
       }
-      .mc-del-input-wrap { position: relative; }
-      .mc-del-input-confirm {
-        width: 100%; padding: 0.65rem 2.5rem 0.65rem 0.85rem;
-        background: var(--background); border: 1.5px solid var(--border);
-        border-radius: 10px; color: var(--text-main);
-        font-size: 0.9rem; font-weight: 700;
-        font-family: 'JetBrains Mono', monospace;
-        transition: all 0.2s; outline: none;
+      .mc-del-checkbox-wrap:has(.is-checked) {
+        background: rgba(16, 185, 129, 0.05);
+        border-color: rgba(16, 185, 129, 0.3);
+        border-style: solid;
       }
-      .mc-del-input-wrap.is-valid .mc-del-input-confirm {
+
+      .mc-del-checkbox-label {
+        display: flex; align-items: flex-start; gap: 0.75rem;
+        cursor: pointer;
+      }
+      .mc-del-checkbox-input {
+        position: absolute; opacity: 0; width: 0; height: 0;
+      }
+      .mc-del-checkbox-box {
+        width: 22px; height: 22px;
+        border-radius: 6px;
+        border: 2px solid var(--text-muted);
+        background: var(--surface);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        transition: all 0.2s;
+        margin-top: 1px;
+      }
+      .mc-del-checkbox-label:hover .mc-del-checkbox-box {
+        border-color: #EF4444;
+      }
+      .mc-del-checkbox-label.is-checked .mc-del-checkbox-box {
+        background: #10B981;
         border-color: #10B981;
-        background: rgba(16,185,129,0.05);
-        padding-right: 2.5rem;
+        color: white;
       }
-      .mc-del-check {
-        position: absolute; right: 0.75rem; top: 50%;
-        transform: translateY(-50%);
-        color: #10B981; pointer-events: none;
+      .mc-del-checkbox-text {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+        user-select: none;
+      }
+      .mc-del-checkbox-text strong {
+        color: var(--text-main);
+        font-weight: 700;
       }
 
       /* FOOTER */

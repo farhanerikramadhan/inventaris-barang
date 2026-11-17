@@ -472,14 +472,15 @@ function ItemFormStyles() {
     <style>{`
       .mc-modal-wide { max-width: 760px; }
       @media (max-width: 720px) {
-        .mc-modal-wide { max-width: 440px; }
+        .mc-modal-wide { max-width: 100%; margin: 0.5rem; }
       }
 
+      /* ✅ KUNCI SCROLL: align-items start & overflow auto */
       .mc-body-grid {
         display: grid;
         grid-template-columns: 1fr 1.2fr;
         gap: 1.1rem;
-        align-items: stretch;
+        align-items: start; /* Mencegah stretching */
       }
       @media (max-width: 720px) {
         .mc-body-grid {

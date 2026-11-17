@@ -12,7 +12,7 @@
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   display: flex;
-  align-items: center;
+  align-items: center; /* ✅ Modal selalu di tengah */
   justify-content: center;
   z-index: 50;
   padding: 1rem;
@@ -31,7 +31,10 @@
   box-shadow: 0 24px 64px -16px rgba(0, 0, 0, 0.45);
   width: 100%;
   max-width: 440px;
-  max-height: calc(100vh - 2rem);
+  
+  /* ✅ KUNCI UTAMA: Batasi tinggi maksimal agar tidak tembus layar */
+  max-height: 90vh; 
+  
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -127,10 +130,14 @@
 /* ============ BODY ============ */
 .mc-modal-body {
   padding: 1.25rem;
-  overflow-y: auto;
+  
+  /* ✅ KUNCI KEDUA: Area ini yang akan scroll jika isinya panjang */
+  overflow-y: auto; 
+  
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
+  flex: 1; /* Memastikan body mengambil sisa ruang yang tersedia */
 }
 
 /* ============ FOOTER ============ */
@@ -142,7 +149,9 @@
   padding: 0.85rem 1.25rem;
   background: var(--background);
   border-top: 1px solid var(--border);
-  flex-shrink: 0;
+  
+  /* ✅ KUNCI KETIGA: Footer selalu menempel di bawah, tidak ikut scroll */
+  flex-shrink: 0; 
 }
 .mc-modal-summary {
   display: flex;

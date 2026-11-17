@@ -14,7 +14,7 @@ import { logActivity } from "../utils/logActivity";
 import ItemTable from "../components/items/ItemTable";
 import ItemForm from "../components/items/ItemForm";
 import ImportCSV from "../components/items/ImportCSV";
-import ConfirmDialog from "../components/ui/ConfirmDialog";
+import DeleteItemModal from "../components/items/DeleteItemModal"; // ✅ Import modal hapus baru
 
 const PAGE_SIZE = 10;
 
@@ -58,9 +58,8 @@ export default function Items() {
   const [sortDir, setSortDir] = useState("asc");
   const [showFilters, setShowFilters] = useState(false);
 
-  // ── State konfirmasi hapus ──
+  // ── State konfirmasi hapus (Menggunakan Modal Baru) ──
   const [confirmDelete, setConfirmDelete] = useState(null);
-  const [deleting, setDeleting] = useState(false);
 
   // ── Reference data ──
   const [categories, setCategories] = useState([]);
@@ -195,29 +194,6 @@ export default function Items() {
   // ── Handle delete dari ItemTable ──
   const handleDeleteClick = (item) => {
     setConfirmDelete(item);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!confirmDelete) return;
-    const item = confirmDelete;
-
-    setDeleting(true);
-    const { error } = await supabase.from("items").delete().eq("id", item.id);
-
-    if (error) {
-      setDeleting(false);
-      throw new Error(error.message);
-    }
-
-    await logActivity({
-      action: "delete_item",
-      entity: "items",
-      entityId: item.id,
-      detail: { name: item.name },
-    });
-
-    setDeleting(false);
-    refetch();
   };
 
   return (
@@ -510,22 +486,17 @@ export default function Items() {
       {showForm && <ItemForm item={editing} onClose={() => setShowForm(false)} onSaved={refetch} />}
       {showImport && <ImportCSV onClose={() => setShowImport(false)} onImported={refetch} />}
 
-      {/* ================= MODAL KONFIRMASI HAPUS ================= */}
-      <ConfirmDialog
-        open={!!confirmDelete}
-        onClose={() => !deleting && setConfirmDelete(null)}
-        onConfirm={handleDeleteConfirm}
-        title="Hapus Barang?"
-        description={
-          <>
-            Barang <strong>"{confirmDelete?.name}"</strong> beserta{" "}
-            <strong>semua unit fisiknya</strong> akan dihapus permanen.
-            Tindakan ini tidak dapat dibatalkan.
-          </>
-        }
-        confirmText="Hapus Barang"
-        variant="danger"
-      />
+      {/* ✅ MODAL KONFIRMASI HAPUS BARU (Mewajibkan Alasan) */}
+      {confirmDelete && (
+        <DeleteItemModal
+          item={confirmDelete}
+          onClose={() => setConfirmDelete(null)}
+          onSuccess={() => {
+            setConfirmDelete(null);
+            refetch();
+          }}
+        />
+      )}
     </div>
   );
 }

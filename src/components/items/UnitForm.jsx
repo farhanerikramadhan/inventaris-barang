@@ -129,7 +129,6 @@ export default function UnitForm({ unit, onClose, onSaved }) {
 
         {/* ============ BODY — 2 KOLOM ============ */}
         <div className="mc-modal-body mc-body-grid">
-
           {error && (
             <div className="mc-error mc-span-full">
               <AlertCircle size={15} />
@@ -137,9 +136,7 @@ export default function UnitForm({ unit, onClose, onSaved }) {
             </div>
           )}
 
-          {/* ══════════════════════════════════════ */}
-          {/* KOLOM KIRI — QR & Preview              */}
-          {/* ══════════════════════════════════════ */}
+          {/* KOLOM KIRI — QR & Preview */}
           <div className="mc-col">
             <div className="mc-qr-panel">
               <div className="mc-qr-panel-head">
@@ -173,9 +170,7 @@ export default function UnitForm({ unit, onClose, onSaved }) {
             </div>
           </div>
 
-          {/* ══════════════════════════════════════ */}
-          {/* KOLOM KANAN — Form Edit                */}
-          {/* ══════════════════════════════════════ */}
+          {/* KOLOM KANAN — Form Edit */}
           <div className="mc-col">
             {/* Kondisi */}
             <div className="mc-field">
@@ -297,13 +292,22 @@ export default function UnitForm({ unit, onClose, onSaved }) {
 function UnitFormStyles() {
   return (
     <style>{`
-      /* ── Wide modal ── */
-      .mc-modal-wide { max-width: 720px; }
+      /* ✅ MODAL SHELL - Memastikan di tengah & tidak melebihi layar */
+      .mc-modal-wide { 
+        max-width: 720px; 
+        max-height: 90vh !important;
+        display: flex;
+        flex-direction: column;
+      }
       @media (max-width: 720px) {
-        .mc-modal-wide { max-width: 440px; }
+        .mc-modal-wide { 
+          max-width: 100%; 
+          margin: 0.5rem;
+          max-height: 95vh !important;
+        }
       }
 
-      /* ── Header blue variant ── */
+      /* Header blue variant */
       .mc-head-blue {
         background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%) !important;
       }
@@ -323,12 +327,18 @@ function UnitFormStyles() {
         opacity: 0.9;
       }
 
-      /* ── Body grid 2 kolom ── */
+      /* ✅ BODY GRID - Bisa di-scroll */
       .mc-body-grid {
         display: grid;
         grid-template-columns: 1fr 1.2fr;
         gap: 1.1rem;
-        align-items: stretch;
+        align-items: start; /* ✅ Mencegah stretching */
+        
+        /* ✅ Kunci scroll */
+        overflow-y: auto !important;
+        flex: 1;
+        padding: 1.25rem;
+        padding-bottom: 1rem;
       }
       @media (max-width: 720px) {
         .mc-body-grid {
@@ -345,7 +355,7 @@ function UnitFormStyles() {
         min-width: 0;
       }
 
-      /* ── Error ── */
+      /* Error */
       .mc-error {
         display: flex;
         align-items: flex-start;
@@ -365,7 +375,7 @@ function UnitFormStyles() {
         color: #F87171;
       }
 
-      /* ── QR Panel (kolom kiri) ── */
+      /* QR Panel */
       .mc-qr-panel {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -430,7 +440,7 @@ function UnitFormStyles() {
         margin-top: 2px;
       }
 
-      /* ── Info card ── */
+      /* Info card */
       .mc-info-card {
         display: flex;
         align-items: flex-start;
@@ -456,7 +466,7 @@ function UnitFormStyles() {
         color: var(--text-muted);
       }
 
-      /* ── Fields ── */
+      /* Fields */
       .mc-field { display: flex; flex-direction: column; }
       .mc-label {
         display: flex;
@@ -473,7 +483,7 @@ function UnitFormStyles() {
         font-size: 0.7rem;
       }
 
-      /* ── Options grid (kondisi) ── */
+      /* Options grid (kondisi) */
       .mc-options-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -508,7 +518,7 @@ function UnitFormStyles() {
         cursor: not-allowed;
       }
 
-      /* ── Status chips ── */
+      /* Status chips */
       .mc-status-chips {
         display: flex;
         flex-wrap: wrap;
@@ -539,7 +549,7 @@ function UnitFormStyles() {
         cursor: not-allowed;
       }
 
-      /* ── Textarea ── */
+      /* Textarea */
       .mc-textarea {
         width: 100%;
         background: var(--background);
@@ -562,7 +572,7 @@ function UnitFormStyles() {
       .mc-textarea::placeholder { color: var(--text-muted); opacity: 0.6; }
       .mc-textarea:disabled { opacity: 0.6; cursor: not-allowed; }
 
-      /* ── Mobile ── */
+      /* Mobile */
       @media (max-width: 720px) {
         .mc-qr-box svg { width: 110px !important; height: 110px !important; }
       }

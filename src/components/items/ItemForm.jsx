@@ -213,7 +213,7 @@ export default function ItemForm({ item, onClose, onSaved }) {
           </div>
         </div>
 
-        {/* ============ BODY — 2 KOLOM ============ */}
+        {/* ============ BODY ============ */}
         <div className="mc-modal-body mc-body-grid">
           {error && (
             <div className="mc-error mc-span-full">
@@ -226,11 +226,8 @@ export default function ItemForm({ item, onClose, onSaved }) {
             <div className="mc-skel mc-span-full" />
           ) : (
             <>
-              {/* ══════════════════════════════════════ */}
-              {/* KOLOM KIRI — Preview                     */}
-              {/* ══════════════════════════════════════ */}
+              {/* KOLOM KIRI */}
               <div className="mc-col">
-                {/* Preview kode unit (create) */}
                 {!isEdit && (
                   <div className="mc-preview">
                     <div className="mc-preview-head">
@@ -262,7 +259,6 @@ export default function ItemForm({ item, onClose, onSaved }) {
                   </div>
                 )}
 
-                {/* Info barang (edit) */}
                 {isEdit && (
                   <div className="mc-preview">
                     <div className="mc-preview-head">
@@ -288,7 +284,6 @@ export default function ItemForm({ item, onClose, onSaved }) {
                   </div>
                 )}
 
-                {/* Jumlah unit (khusus create) */}
                 {!isEdit && (
                   <div className="mc-field">
                     <label className="mc-label">
@@ -332,11 +327,8 @@ export default function ItemForm({ item, onClose, onSaved }) {
                 )}
               </div>
 
-              {/* ══════════════════════════════════════ */}
-              {/* KOLOM KANAN — Form Input                */}
-              {/* ══════════════════════════════════════ */}
+              {/* KOLOM KANAN */}
               <div className="mc-col">
-                {/* Nama */}
                 <div className="mc-field">
                   <label className="mc-label">
                     <Package size={12} />
@@ -354,7 +346,6 @@ export default function ItemForm({ item, onClose, onSaved }) {
                   />
                 </div>
 
-                {/* Kategori & Lokasi (grid 2 kolom) */}
                 <div className="mc-grid-2">
                   <div className="mc-field">
                     <label className="mc-label">
@@ -399,7 +390,6 @@ export default function ItemForm({ item, onClose, onSaved }) {
                   </div>
                 </div>
 
-                {/* Catatan */}
                 <div className="mc-field">
                   <label className="mc-label">
                     Catatan <span className="mc-label-opt">(opsional)</span>
@@ -419,7 +409,6 @@ export default function ItemForm({ item, onClose, onSaved }) {
                   </p>
                 </div>
 
-                {/* Hint khusus edit */}
                 {isEdit && (
                   <div className="mc-hint">
                     <Info size={13} />
@@ -481,13 +470,11 @@ export default function ItemForm({ item, onClose, onSaved }) {
 function ItemFormStyles() {
   return (
     <style>{`
-      /* ── Wide modal ── */
       .mc-modal-wide { max-width: 760px; }
       @media (max-width: 720px) {
         .mc-modal-wide { max-width: 440px; }
       }
 
-      /* ── Body grid 2 kolom ── */
       .mc-body-grid {
         display: grid;
         grid-template-columns: 1fr 1.2fr;
@@ -509,7 +496,6 @@ function ItemFormStyles() {
         min-width: 0;
       }
 
-      /* ── Error ── */
       .mc-error {
         display: flex;
         align-items: flex-start;
@@ -529,7 +515,6 @@ function ItemFormStyles() {
         color: #F87171;
       }
 
-      /* ── Preview (kiri) ── */
       .mc-preview {
         background: var(--accent-soft);
         border: 1px solid var(--accent-border);
@@ -555,7 +540,6 @@ function ItemFormStyles() {
         letter-spacing: 0.05em;
       }
 
-      /* Kode box */
       .mc-preview-code-box {
         background: var(--surface);
         border: 1px solid var(--accent-border);
@@ -578,7 +562,6 @@ function ItemFormStyles() {
         font-style: italic;
       }
 
-      /* Flow visual */
       .mc-preview-flow {
         display: flex;
         align-items: center;
@@ -608,7 +591,6 @@ function ItemFormStyles() {
         font-size: 0.75rem;
       }
 
-      /* Info list (edit mode) */
       .mc-info-list {
         display: flex;
         flex-direction: column;
@@ -639,7 +621,6 @@ function ItemFormStyles() {
         word-break: break-word;
       }
 
-      /* ── Fields ── */
       .mc-field { display: flex; flex-direction: column; }
       .mc-label {
         display: flex;
@@ -666,7 +647,6 @@ function ItemFormStyles() {
         margin-top: 0.35rem;
       }
 
-      /* Input */
       .mc-input {
         width: 100%;
         background: var(--background);
@@ -687,7 +667,6 @@ function ItemFormStyles() {
       .mc-input::placeholder { color: var(--text-muted); opacity: 0.6; }
       .mc-input:disabled { opacity: 0.6; cursor: not-allowed; }
 
-      /* Select */
       .mc-select-wrap { position: relative; }
       .mc-select {
         width: 100%;
@@ -713,7 +692,6 @@ function ItemFormStyles() {
       }
       .mc-select:disabled { opacity: 0.6; cursor: not-allowed; }
 
-      /* Textarea */
       .mc-textarea {
         width: 100%;
         background: var(--background);
@@ -736,7 +714,6 @@ function ItemFormStyles() {
       .mc-textarea::placeholder { color: var(--text-muted); opacity: 0.6; }
       .mc-textarea:disabled { opacity: 0.6; cursor: not-allowed; }
 
-      /* Grid 2 kolom untuk kategori+lokasi */
       .mc-grid-2 {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -746,7 +723,6 @@ function ItemFormStyles() {
         .mc-grid-2 { grid-template-columns: 1fr; }
       }
 
-      /* Stepper */
       .mc-stepper {
         display: flex;
         border: 1.5px solid var(--border);
@@ -796,7 +772,6 @@ function ItemFormStyles() {
       }
       .mc-stepper-input[type=number] { -moz-appearance: textfield; }
 
-      /* Hint */
       .mc-hint {
         display: flex;
         align-items: flex-start;
@@ -815,7 +790,6 @@ function ItemFormStyles() {
         border-color: rgba(59, 130, 246, 0.2);
       }
 
-      /* Skeleton */
       .mc-skel {
         height: 240px;
         border-radius: 11px;
@@ -827,7 +801,6 @@ function ItemFormStyles() {
         50% { opacity: 0.5; }
       }
 
-      /* Mobile */
       @media (max-width: 720px) {
         .mc-preview-code { font-size: 1rem; }
       }

@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
-  ArrowLeft, Printer, Box, Info, Layers,
+  ArrowLeft, Printer, Box, Info, Layers, Pencil,
   ChevronRight, Activity, PackageSearch, Trash2, Plus,
   Home, MapPin, Tag, TrendingUp, CheckCircle2,
   AlertTriangle, Sparkles, QrCode, FileText, BarChart3,
@@ -12,6 +12,7 @@ import { useAuthStore } from "../stores/authStore";
 import UnitTable from "../components/items/UnitTable";
 import StockOutForm from "../components/items/StockOutForm";
 import StockInForm from "../components/items/StockInForm";
+import ItemForm from "../components/items/ItemForm"; // Pastikan path ini benar
 
 const CONDITION_META = {
   baik:         { label: "Baik",          color: "#10B981", bg: "rgba(16,185,129,0.12)" },
@@ -30,6 +31,7 @@ export default function ItemDetailPage() {
   const [activeTab, setActiveTab] = useState("units");
   const [showStockOut, setShowStockOut] = useState(false);
   const [showStockIn, setShowStockIn] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -126,6 +128,13 @@ export default function ItemDetailPage() {
         </nav>
 
         <div className="mc-action-bar">
+          {/* ✅ TOMBOL EDIT BARANG BARU */}
+          {canWrite && (
+            <button onClick={() => setShowEdit(true)} className="mc-btn-secondary">
+              <Pencil size={16} /> Edit Barang
+            </button>
+          )}
+
           {canWrite && (
             <button onClick={() => setShowStockIn(true)} className="mc-btn-primary">
               <Plus size={16} /> Tambah Stok
@@ -293,12 +302,24 @@ export default function ItemDetailPage() {
           onSuccess={fetchItemData}
         />
       )}
+
+      {/* ✅ MODAL EDIT BARANG */}
+      {showEdit && (
+        <ItemForm
+          item={item}
+          onClose={() => setShowEdit(false)}
+          onSaved={() => {
+            setShowEdit(false);
+            fetchItemData(); // Refresh data setelah disimpan
+          }}
+        />
+      )}
     </div>
   );
 }
 
 /* ============================================================
-   Styles — Tema Landing (Gold/Maroon/Navy)
+   Styles
 ============================================================ */
 function ItemStyles() {
   return (
@@ -443,7 +464,7 @@ function ItemStyles() {
         color: var(--text-main);
       }
 
-      /* ============ HERO — Navy → Maroon gradient ============ */
+      /* ============ HERO ============ */
       .mc-hero {
         position: relative;
         background: linear-gradient(135deg, #16213E 0%, #0F172A 55%, #7F1D1D 100%);
@@ -454,10 +475,7 @@ function ItemStyles() {
         isolation: isolate;
       }
 
-      .mc-hero-bg {
-        position: absolute; inset: 0;
-        pointer-events: none;
-      }
+      .mc-hero-bg { position: absolute; inset: 0; pointer-events: none; }
       .mc-hero-glow-1 {
         position: absolute;
         top: -50%; right: -10%;
@@ -543,12 +561,8 @@ function ItemStyles() {
         line-height: 1.15;
         margin-bottom: 1rem;
       }
-      @media (min-width: 768px) {
-        .mc-hero-title { font-size: 2.6rem; }
-      }
-      @media (max-width: 640px) {
-        .mc-hero-title { font-size: 1.65rem; }
-      }
+      @media (min-width: 768px) { .mc-hero-title { font-size: 2.6rem; } }
+      @media (max-width: 640px) { .mc-hero-title { font-size: 1.65rem; } }
 
       .mc-hero-notes {
         display: flex; align-items: flex-start; gap: 0.6rem;
@@ -566,19 +580,15 @@ function ItemStyles() {
       .mc-hero-notes-label { font-weight: 700; color: white; }
       .mc-hero-notes-text { color: rgba(255,255,255,0.75); }
 
-      /* Stat boxes di hero */
+      /* Stat boxes */
       .mc-hero-stats {
         display: grid;
         grid-template-columns: 1fr;
         gap: 0.75rem;
         width: 100%;
       }
-      @media (min-width: 480px) {
-        .mc-hero-stats { grid-template-columns: 1fr 1.5fr; }
-      }
-      @media (min-width: 1024px) {
-        .mc-hero-stats { width: auto; min-width: 380px; }
-      }
+      @media (min-width: 480px) { .mc-hero-stats { grid-template-columns: 1fr 1.5fr; } }
+      @media (min-width: 1024px) { .mc-hero-stats { width: auto; min-width: 380px; } }
 
       .mc-stat-box {
         background: rgba(255, 255, 255, 0.08);
@@ -635,10 +645,7 @@ function ItemStyles() {
         font-variant-numeric: tabular-nums;
         margin-bottom: 0.5rem;
       }
-      .mc-stat-box-hint {
-        font-size: 0.72rem;
-        color: rgba(255,255,255,0.6);
-      }
+      .mc-stat-box-hint { font-size: 0.72rem; color: rgba(255,255,255,0.6); }
       .mc-progress {
         width: 100%;
         height: 6px;
@@ -658,12 +665,8 @@ function ItemStyles() {
         color: rgba(255,255,255,0.7);
         font-weight: 600;
       }
-      .mc-bd-item {
-        display: inline-flex; align-items: center; gap: 0.3rem;
-      }
-      .mc-bd-dot {
-        width: 7px; height: 7px; border-radius: 50%;
-      }
+      .mc-bd-item { display: inline-flex; align-items: center; gap: 0.3rem; }
+      .mc-bd-dot { width: 7px; height: 7px; border-radius: 50%; }
       .mc-bd-dot.warning { background: #FBBF24; }
       .mc-bd-dot.danger { background: #F87171; }
 

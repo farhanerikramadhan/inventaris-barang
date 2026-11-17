@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 import { 
   Eye, Trash2, Boxes, Package, Tag, MapPin, 
-  CheckCircle2, AlertTriangle 
+  CheckCircle2, AlertTriangle, Pencil 
 } from "lucide-react";
 
-export default function ItemTable({ items, loading, onDeleteClick, canWrite }) {
+export default function ItemTable({ items, loading, onDeleteClick, onEditClick, canWrite }) {
   // ── Skeleton ──
   if (loading) {
     return (
@@ -24,17 +24,14 @@ export default function ItemTable({ items, loading, onDeleteClick, canWrite }) {
   return (
     <div className="mc-table-card">
       <div className="mc-table-scroll">
-        <table
-          className="mc-table"
-          style={{ tableLayout: "fixed", width: "100%" }}
-        >
+        <table className="mc-table" style={{ tableLayout: "fixed", width: "100%" }}>
           <colgroup>
-            <col style={{ width: "28%" }} />
-            <col style={{ width: "14%" }} />
-            <col style={{ width: "14%" }} />
+            <col style={{ width: "26%" }} />
+            <col style={{ width: "13%" }} />
+            <col style={{ width: "13%" }} />
             <col style={{ width: "10%" }} />
             <col style={{ width: "18%" }} />
-            <col style={{ width: "16%" }} />
+            <col style={{ width: "20%" }} />
           </colgroup>
 
           <thead>
@@ -105,14 +102,8 @@ export default function ItemTable({ items, loading, onDeleteClick, canWrite }) {
                     ) : (
                       <div className="mc-cond-wrap">
                         <div className="mc-cond-bar">
-                          <div
-                            className="mc-cond-fill good"
-                            style={{ width: `${persenBaik}%` }}
-                          />
-                          <div
-                            className="mc-cond-fill bad"
-                            style={{ width: `${100 - persenBaik}%` }}
-                          />
+                          <div className="mc-cond-fill good" style={{ width: `${persenBaik}%` }} />
+                          <div className="mc-cond-fill bad" style={{ width: `${100 - persenBaik}%` }} />
                         </div>
                         <div className="mc-cond-legend">
                           <span className="mc-cond-item good">
@@ -128,25 +119,31 @@ export default function ItemTable({ items, loading, onDeleteClick, canWrite }) {
                     )}
                   </td>
 
-                  {/* Aksi (Diperbarui) */}
+                  {/* Aksi */}
                   <td className="text-right">
                     <div className="mc-action-wrap">
-                      <Link 
-                        to={`/items/${item.id}`} 
-                        className="mc-act-btn primary"
-                        title="Lihat Detail"
-                      >
-                        <Eye size={14} /> 
-                        <span>Detail</span>
+                      <Link to={`/items/${item.id}`} className="mc-act-btn primary" title="Detail">
+                        <Eye size={14} /> <span>Detail</span>
                       </Link>
+                      
                       {canWrite && (
-                        <button
-                          onClick={() => onDeleteClick?.(item)}
-                          className="mc-act-btn danger"
-                          title="Hapus Barang"
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                        <>
+                          <button
+                            onClick={() => onEditClick?.(item)}
+                            className="mc-act-btn edit"
+                            title="Edit Barang"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          
+                          <button
+                            onClick={() => onDeleteClick?.(item)}
+                            className="mc-act-btn danger"
+                            title="Hapus Barang"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>
@@ -162,9 +159,6 @@ export default function ItemTable({ items, loading, onDeleteClick, canWrite }) {
   );
 }
 
-/* ============================================================
-   Styles
-============================================================ */
 function ItemTableStyles() {
   return (
     <style>{`
@@ -321,7 +315,6 @@ function ItemTableStyles() {
         font-style: italic;
       }
 
-      /* ✅ ACTION BUTTONS DIPERBARUI */
       .mc-action-wrap {
         display: inline-flex; align-items: center; gap: 0.4rem;
         justify-content: flex-end;
@@ -342,7 +335,6 @@ function ItemTableStyles() {
         overflow: hidden;
       }
 
-      /* Tombol Detail */
       .mc-act-btn.primary {
         padding: 0.45rem 0.85rem;
         background: var(--surface);
@@ -359,7 +351,21 @@ function ItemTableStyles() {
       .mc-act-btn.primary:hover svg { stroke: white; }
       .mc-act-btn.primary:active { transform: translateY(0); }
 
-      /* Tombol Hapus (Danger) */
+      .mc-act-btn.edit {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        background: transparent;
+        color: var(--text-muted);
+        border: 1.5px solid transparent;
+      }
+      .mc-act-btn.edit:hover {
+        background: rgba(212,175,55,0.1);
+        color: var(--gold);
+        border-color: rgba(212,175,55,0.3);
+        transform: scale(1.1) rotate(5deg);
+      }
+
       .mc-act-btn.danger {
         width: 34px;
         height: 34px;
@@ -398,7 +404,7 @@ function ItemTableStyles() {
 
       @media (max-width: 640px) {
         .mc-table th, .mc-table td { padding: 0.7rem 0.85rem; }
-        .mc-act-btn.primary span { display: none; } /* Sembunyikan teks "Detail" di HP */
+        .mc-act-btn.primary span { display: none; }
         .mc-act-btn.primary { padding: 0.45rem; width: 34px; height: 34px; }
       }
     `}</style>

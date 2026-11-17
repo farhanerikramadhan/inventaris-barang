@@ -3,22 +3,20 @@ import {
   Plus, Upload, Search, PackageSearch, Sparkles,
   X, Box, Tag, MapPin, CheckCircle2, AlertTriangle,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
-  Command, Rows3, Filter, SlidersHorizontal,
-  ArrowUpDown, ChevronDown, ChevronUp, TrendingUp,
-  LayoutGrid, ArrowUpRight, Trash2
+  Command, Filter, SlidersHorizontal,
+  ArrowUpDown, ChevronDown, ChevronUp,
+  LayoutGrid, ArrowUpRight, Activity
 } from "lucide-react";
 import { useAuthStore } from "../stores/authStore";
 import { useItems } from "../hooks/useItems";
 import { supabase } from "../lib/supabase";
-import { logActivity } from "../utils/logActivity";
 import ItemTable from "../components/items/ItemTable";
 import ItemForm from "../components/items/ItemForm";
 import ImportCSV from "../components/items/ImportCSV";
-import DeleteItemModal from "../components/items/DeleteItemModal"; // ✅ Import modal hapus baru
+import DeleteItemModal from "../components/items/DeleteItemModal";
 
 const PAGE_SIZE = 10;
 
-/* ✅ Helper — deteksi field unit dari berbagai kemungkinan */
 function getUnitCount(item) {
   if (!item) return 0;
   if (typeof item.total_units === "number") return item.total_units;
@@ -29,7 +27,6 @@ function getUnitCount(item) {
   return 0;
 }
 
-/* ✅ Helper — hitung total rusak dari condition_summary */
 function getRusakCount(item) {
   if (!item) return 0;
   const c = item.condition_summary || {};
@@ -54,20 +51,17 @@ export default function Items() {
   const [filterLocation, setFilterLocation] = useState("all");
   const [filterCondition, setFilterCondition] = useState("all");
   const [filterUnit, setFilterUnit] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all"); // ✅ Filter Status Baru
   const [sortBy, setSortBy] = useState("name");
   const [sortDir, setSortDir] = useState("asc");
   const [showFilters, setShowFilters] = useState(false);
 
-  // ── State konfirmasi hapus (Menggunakan Modal Baru) ──
   const [confirmDelete, setConfirmDelete] = useState(null);
-
-  // ── Reference data ──
   const [categories, setCategories] = useState([]);
   const [locations, setLocations] = useState([]);
 
   const { items, loading, refetch } = useItems({ search });
 
-  // Fetch categories & locations sekali di awal
   useEffect(() => {
     (async () => {
       const [cats, locs] = await Promise.all([
@@ -82,9 +76,8 @@ export default function Items() {
   useEffect(() => {
     setMounted(true);
     setPage(1);
-  }, [search, filterCategory, filterLocation, filterCondition, filterUnit]);
+  }, [search, filterCategory, filterLocation, filterCondition, filterUnit, filterStatus]);
 
-  // ⌘K / Ctrl+K
   useEffect(() => {
     const handler = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -96,7 +89,7 @@ export default function Items() {
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  // ── Filter ──
+  // ── Filter Logic ──
   const filteredItems = useMemo(() => {
     return items.filter(it => {
       if (filterCategory !== "all" && it.category_id !== filterCategory) return false;
@@ -110,35 +103,27 @@ export default function Items() {
       if (filterCondition === "has_damage" && rusakCount === 0) return false;
       if (filterCondition === "no_damage" && rusakCount > 0) return false;
 
+      // ✅ Logika Filter Status (Dipinjam)
+      if (filterStatus !== "all") {
+        const statusSummary = it.status_summary || {};
+        if (filterStatus === "dipinjam" && !statusSummary.dipinjam) return false;
+        if (filterStatus === "active" && !statusSummary.active) return false;
+      }
+
       return true;
     });
-  }, [items, filterCategory, filterLocation, filterCondition, filterUnit]);
+  }, [items, filterCategory, filterLocation, filterCondition, filterUnit, filterStatus]);
 
-  // ── Sort ──
   const sortedItems = useMemo(() => {
     const arr = [...filteredItems];
     arr.sort((a, b) => {
       let va, vb;
       switch (sortBy) {
-        case "category":
-          va = a.category?.name || "";
-          vb = b.category?.name || "";
-          break;
-        case "location":
-          va = a.location?.name || "";
-          vb = b.location?.name || "";
-          break;
-        case "units":
-          va = getUnitCount(a);
-          vb = getUnitCount(b);
-          break;
-        case "condition":
-          va = getRusakCount(a);
-          vb = getRusakCount(b);
-          break;
-        default:
-          va = (a.name || "").toLowerCase();
-          vb = (b.name || "").toLowerCase();
+        case "category": va = a.category?.name || ""; vb = b.category?.name || ""; break;
+        case "location": va = a.location?.name || ""; vb = b.location?.name || ""; break;
+        case "units": va = getUnitCount(a); vb = getUnitCount(b); break;
+        case "condition": va = getRusakCount(a); vb = getRusakCount(b); break;
+        default: va = (a.name || "").toLowerCase(); vb = (b.name || "").toLowerCase();
       }
       if (va < vb) return sortDir === "asc" ? -1 : 1;
       if (va > vb) return sortDir === "asc" ? 1 : -1;
@@ -147,7 +132,6 @@ export default function Items() {
     return arr;
   }, [filteredItems, sortBy, sortDir]);
 
-  // ── Stats (dari filtered) ──
   const stats = useMemo(() => {
     const totalItems = sortedItems.length;
     const withUnits = sortedItems.filter(it => getUnitCount(it) > 0).length;
@@ -156,7 +140,6 @@ export default function Items() {
     return { totalItems, withUnits, categories: cats, locations: locs };
   }, [sortedItems]);
 
-  // ── Pagination ──
   const totalPages = Math.max(1, Math.ceil(sortedItems.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
   const paginatedItems = useMemo(() => {
@@ -178,6 +161,7 @@ export default function Items() {
     filterLocation !== "all",
     filterCondition !== "all",
     filterUnit !== "all",
+    filterStatus !== "all", // ✅
   ].filter(Boolean).length;
 
   const resetFilters = () => {
@@ -185,50 +169,36 @@ export default function Items() {
     setFilterLocation("all");
     setFilterCondition("all");
     setFilterUnit("all");
+    setFilterStatus("all"); // ✅
     setSearch("");
     setPage(1);
   };
 
   const openAdd = () => { setEditing(null); setShowForm(true); };
 
-  // ── Handle delete dari ItemTable ──
-  const handleDeleteClick = (item) => {
-    setConfirmDelete(item);
-  };
+  const handleDeleteClick = (item) => { setConfirmDelete(item); };
+  const handleEditClick = (item) => { setEditing(item); setShowForm(true); }; // ✅ Fungsi Edit
 
   return (
     <div className={`mc-items ${mounted ? "is-mounted" : ""}`}>
       <ItemsStyles />
 
-      {/* ================= HEADER ================= */}
+      {/* HEADER */}
       <div className="mc-head">
         <div className="mc-head-text">
-          <div className="mc-eyebrow">
-            <Sparkles size={12} />
-            <span>Manajemen Inventaris</span>
-          </div>
-          <h1 className="mc-title">
-            <span className="mc-title-icon"><Box size={22} /></span>
-            Daftar Barang
-          </h1>
-          <p className="mc-sub">
-            Kelola data inventaris induk dan unit fisik barang sekolah dengan mudah dan terorganisir.
-          </p>
+          <div className="mc-eyebrow"><Sparkles size={12} /><span>Manajemen Inventaris</span></div>
+          <h1 className="mc-title"><span className="mc-title-icon"><Box size={22} /></span>Daftar Barang</h1>
+          <p className="mc-sub">Kelola data inventaris induk dan unit fisik barang sekolah.</p>
         </div>
-
         {canWrite && (
           <div className="mc-head-actions">
-            <button onClick={() => setShowImport(true)} className="mc-btn-secondary">
-              <Upload size={16} /> Import CSV
-            </button>
-            <button onClick={openAdd} className="mc-btn-primary">
-              <Plus size={16} /> Tambah Barang
-            </button>
+            <button onClick={() => setShowImport(true)} className="mc-btn-secondary"><Upload size={16} /> Import CSV</button>
+            <button onClick={openAdd} className="mc-btn-primary"><Plus size={16} /> Tambah Barang</button>
           </div>
         )}
       </div>
 
-      {/* ================= STAT SUMMARY ================= */}
+      {/* STAT SUMMARY */}
       {!loading && items.length > 0 && (
         <div className="mc-stat-row">
           {[
@@ -237,60 +207,32 @@ export default function Items() {
             { label: "Kategori", value: stats.categories, icon: Tag, cls: "purple", accent: "#8B5CF6" },
             { label: "Lokasi", value: stats.locations, icon: MapPin, cls: "orange", accent: "#F59E0B" },
           ].map((s, i) => (
-            <div
-              key={s.label}
-              className="mc-stat-item"
-              style={{
-                animationDelay: `${0.05 + i * 0.06}s`,
-                "--stat-accent": s.accent,
-              }}
-            >
+            <div key={s.label} className="mc-stat-item" style={{ animationDelay: `${0.05 + i * 0.06}s`, "--stat-accent": s.accent }}>
               <span className={`mc-stat-icon ${s.cls}`}><s.icon size={14} /></span>
-              <div className="mc-stat-body">
-                <p className="mc-stat-val">{s.value}</p>
-                <p className="mc-stat-lbl">{s.label}</p>
-              </div>
+              <div className="mc-stat-body"><p className="mc-stat-val">{s.value}</p><p className="mc-stat-lbl">{s.label}</p></div>
               <ArrowUpRight size={12} className="mc-stat-arrow" />
             </div>
           ))}
         </div>
       )}
 
-      {/* ================= SEARCH + FILTER TOGGLE ================= */}
+      {/* SEARCH & FILTER TOGGLE */}
       <div className="mc-search-row">
         <div className="mc-search-wrap">
           <div className="mc-search-glow" />
           <div className="mc-search-inner">
             <Search size={18} className="mc-search-icon" />
-            <input
-              ref={searchRef}
-              type="text"
-              placeholder="Cari nama barang, kode, atau kategori..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="mc-search-input"
-            />
-            {search ? (
-              <button onClick={() => setSearch("")} className="mc-search-clear" aria-label="Clear search">
-                <X size={14} />
-              </button>
-            ) : (
-              <div className="mc-search-hint"><Command size={11} /> K</div>
-            )}
+            <input ref={searchRef} type="text" placeholder="Cari nama barang..." value={search} onChange={(e) => setSearch(e.target.value)} className="mc-search-input" />
+            {search ? <button onClick={() => setSearch("")} className="mc-search-clear"><X size={14} /></button> : <div className="mc-search-hint"><Command size={11} /> K</div>}
           </div>
         </div>
-
-        <button
-          onClick={() => setShowFilters(v => !v)}
-          className={`mc-filter-toggle ${showFilters || activeFilterCount > 0 ? "is-active" : ""}`}
-        >
-          <SlidersHorizontal size={16} />
-          <span className="mc-filter-toggle-text">Filter</span>
+        <button onClick={() => setShowFilters(v => !v)} className={`mc-filter-toggle ${showFilters || activeFilterCount > 0 ? "is-active" : ""}`}>
+          <SlidersHorizontal size={16} /><span>Filter</span>
           {activeFilterCount > 0 && <span className="mc-filter-badge">{activeFilterCount}</span>}
         </button>
       </div>
 
-      {/* ================= FILTER PANEL ================= */}
+      {/* FILTER PANEL */}
       {showFilters && (
         <div className="mc-filter-panel">
           <div className="mc-filter-grid">
@@ -301,7 +243,6 @@ export default function Items() {
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
-
             <div className="mc-filter-field">
               <label><MapPin size={12} /> Lokasi</label>
               <select value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)} className="mc-filter-select">
@@ -309,7 +250,14 @@ export default function Items() {
                 {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
               </select>
             </div>
-
+            <div className="mc-filter-field">
+              <label><Activity size={12} /> Status</label>
+              <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="mc-filter-select">
+                <option value="all">Semua Status</option>
+                <option value="active">Tersedia (Aktif)</option>
+                <option value="dipinjam">Sedang Dipinjam</option>
+              </select>
+            </div>
             <div className="mc-filter-field">
               <label><AlertTriangle size={12} /> Kondisi</label>
               <select value={filterCondition} onChange={(e) => setFilterCondition(e.target.value)} className="mc-filter-select">
@@ -318,7 +266,6 @@ export default function Items() {
                 <option value="no_damage">Semua Baik</option>
               </select>
             </div>
-
             <div className="mc-filter-field">
               <label><Box size={12} /> Unit Fisik</label>
               <select value={filterUnit} onChange={(e) => setFilterUnit(e.target.value)} className="mc-filter-select">
@@ -327,7 +274,6 @@ export default function Items() {
                 <option value="no_unit">Belum Punya</option>
               </select>
             </div>
-
             <div className="mc-filter-field">
               <label><ArrowUpDown size={12} /> Urutkan</label>
               <div className="mc-sort-group">
@@ -336,13 +282,8 @@ export default function Items() {
                   <option value="category">Kategori</option>
                   <option value="location">Lokasi</option>
                   <option value="units">Jumlah Unit</option>
-                  <option value="condition">Kondisi</option>
                 </select>
-                <button
-                  onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")}
-                  className="mc-sort-dir"
-                  title={sortDir === "asc" ? "A → Z" : "Z → A"}
-                >
+                <button onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")} className="mc-sort-dir">
                   {sortDir === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 </button>
               </div>
@@ -352,69 +293,40 @@ export default function Items() {
           {activeFilterCount > 0 && (
             <div className="mc-active-filters">
               <span className="mc-active-label"><Filter size={11} /> Filter aktif:</span>
-
               {filterCategory !== "all" && (
-                <span className="mc-filter-chip">
-                  <Tag size={10} />
-                  {categories.find(c => c.id === filterCategory)?.name || "Kategori"}
-                  <button onClick={() => setFilterCategory("all")}><X size={10} /></button>
-                </span>
+                <span className="mc-filter-chip"><Tag size={10} /> {categories.find(c => c.id === filterCategory)?.name || "Kategori"}<button onClick={() => setFilterCategory("all")}><X size={10} /></button></span>
               )}
               {filterLocation !== "all" && (
-                <span className="mc-filter-chip">
-                  <MapPin size={10} />
-                  {locations.find(l => l.id === filterLocation)?.name || "Lokasi"}
-                  <button onClick={() => setFilterLocation("all")}><X size={10} /></button>
-                </span>
+                <span className="mc-filter-chip"><MapPin size={10} /> {locations.find(l => l.id === filterLocation)?.name || "Lokasi"}<button onClick={() => setFilterLocation("all")}><X size={10} /></button></span>
+              )}
+              {filterStatus !== "all" && (
+                <span className="mc-filter-chip"><Activity size={10} /> {filterStatus === "dipinjam" ? "Dipinjam" : "Aktif"}<button onClick={() => setFilterStatus("all")}><X size={10} /></button></span>
               )}
               {filterCondition !== "all" && (
-                <span className="mc-filter-chip">
-                  <AlertTriangle size={10} />
-                  {filterCondition === "has_damage" ? "Ada Kerusakan" : "Semua Baik"}
-                  <button onClick={() => setFilterCondition("all")}><X size={10} /></button>
-                </span>
+                <span className="mc-filter-chip"><AlertTriangle size={10} /> {filterCondition === "has_damage" ? "Ada Kerusakan" : "Semua Baik"}<button onClick={() => setFilterCondition("all")}><X size={10} /></button></span>
               )}
               {filterUnit !== "all" && (
-                <span className="mc-filter-chip">
-                  <Box size={10} />
-                  {filterUnit === "has_unit" ? "Punya Unit" : "Belum Punya"}
-                  <button onClick={() => setFilterUnit("all")}><X size={10} /></button>
-                </span>
+                <span className="mc-filter-chip"><Box size={10} /> {filterUnit === "has_unit" ? "Punya Unit" : "Belum Punya"}<button onClick={() => setFilterUnit("all")}><X size={10} /></button></span>
               )}
-
-              <button onClick={resetFilters} className="mc-reset-btn">
-                <X size={11} /> Reset semua
-              </button>
+              <button onClick={resetFilters} className="mc-reset-btn"><X size={11} /> Reset</button>
             </div>
           )}
         </div>
       )}
 
-      {/* ================= KONTEN ================= */}
+      {/* KONTEN */}
       {loading && items.length === 0 ? (
-        <div className="mc-skeleton">
-          <div className="mc-skel-head" />
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="mc-skel-row" style={{ animationDelay: `${i * 0.06}s` }} />
-          ))}
-        </div>
+        <div className="mc-skeleton"><div className="mc-skel-head" />{[...Array(5)].map((_, i) => <div key={i} className="mc-skel-row" style={{ animationDelay: `${i * 0.06}s` }} />)}</div>
       ) : sortedItems.length === 0 ? (
         <div className="mc-empty">
-          <div className="mc-empty-glow" />
-          <div className="mc-empty-icon"><PackageSearch size={40} /></div>
-          <h3 className="mc-empty-title">
-            {(search || activeFilterCount > 0) ? "Tidak ada hasil" : "Belum ada data barang"}
-          </h3>
-          <p className="mc-empty-sub">
-            {(search || activeFilterCount > 0)
-              ? "Tidak ditemukan barang cocok dengan pencarian atau filter."
-              : "Silakan tambahkan barang baru secara manual atau import data dari file CSV untuk memulai inventarisasi."}
-          </p>
+          <div className="mc-empty-glow" /><div className="mc-empty-icon"><PackageSearch size={40} /></div>
+          <h3 className="mc-empty-title">{(search || activeFilterCount > 0) ? "Tidak ada hasil" : "Belum ada data barang"}</h3>
+          <p className="mc-empty-sub">{(search || activeFilterCount > 0) ? "Tidak ditemukan barang cocok." : "Silakan tambahkan barang baru."}</p>
           {(search || activeFilterCount > 0) ? (
-            <button onClick={resetFilters} className="mc-empty-btn">Reset semua filter</button>
+            <button onClick={resetFilters} className="mc-empty-btn">Reset filter</button>
           ) : canWrite ? (
             <div className="mc-empty-actions">
-              <button onClick={openAdd} className="mc-btn-primary"><Plus size={16} /> Tambah Barang Pertama</button>
+              <button onClick={openAdd} className="mc-btn-primary"><Plus size={16} /> Tambah Barang</button>
               <button onClick={() => setShowImport(true)} className="mc-btn-secondary"><Upload size={16} /> Import CSV</button>
             </div>
           ) : null}
@@ -424,13 +336,7 @@ export default function Items() {
           <div className="mc-table-info">
             <div className="mc-table-info-left">
               <LayoutGrid size={13} />
-              <span>
-                Menampilkan <strong>{startIndex}–{endIndex}</strong> dari <strong>{sortedItems.length}</strong> barang
-                {activeFilterCount > 0 && <> · <strong>{activeFilterCount}</strong> filter aktif</>}
-              </span>
-            </div>
-            <div className="mc-table-info-right">
-              Halaman <strong>{safePage}</strong> / {totalPages}
+              <span>Menampilkan <strong>{startIndex}–{endIndex}</strong> dari <strong>{sortedItems.length}</strong> barang</span>
             </div>
           </div>
 
@@ -438,8 +344,8 @@ export default function Items() {
             <ItemTable
               items={paginatedItems}
               loading={loading}
-              onDelete={refetch}
               onDeleteClick={handleDeleteClick}
+              onEditClick={handleEditClick} // ✅ Prop Edit
               canWrite={canWrite}
             />
           </div>
@@ -447,54 +353,31 @@ export default function Items() {
           {totalPages > 1 && (
             <div className="mc-pagination">
               <div className="mc-pagination-info">{startIndex}–{endIndex} / {sortedItems.length}</div>
-
               <div className="mc-pagination-controls">
-                <button onClick={() => goToPage(1)} disabled={safePage === 1} className="mc-page-btn edge" title="Halaman pertama">
-                  <ChevronsLeft size={14} />
-                </button>
-                <button onClick={() => goToPage(safePage - 1)} disabled={safePage === 1} className="mc-page-btn" title="Sebelumnya">
-                  <ChevronLeft size={14} />
-                </button>
-
+                <button onClick={() => goToPage(1)} disabled={safePage === 1} className="mc-page-btn edge"><ChevronsLeft size={14} /></button>
+                <button onClick={() => goToPage(safePage - 1)} disabled={safePage === 1} className="mc-page-btn"><ChevronLeft size={14} /></button>
                 <div className="mc-page-numbers">
                   {buildPageNumbers(safePage, totalPages).map((p, i) =>
-                    p === "..." ? (
-                      <span key={`e${i}`} className="mc-page-ellipsis">…</span>
-                    ) : (
-                      <button key={p} onClick={() => goToPage(p)} className={`mc-page-num ${p === safePage ? "is-active" : ""}`}>
-                        {p}
-                      </button>
-                    )
+                    p === "..." ? <span key={`e${i}`} className="mc-page-ellipsis">…</span> : <button key={p} onClick={() => goToPage(p)} className={`mc-page-num ${p === safePage ? "is-active" : ""}`}>{p}</button>
                   )}
                 </div>
-
-                <button onClick={() => goToPage(safePage + 1)} disabled={safePage === totalPages} className="mc-page-btn" title="Berikutnya">
-                  <ChevronRight size={14} />
-                </button>
-                <button onClick={() => goToPage(totalPages)} disabled={safePage === totalPages} className="mc-page-btn edge" title="Halaman terakhir">
-                  <ChevronsRight size={14} />
-                </button>
+                <button onClick={() => goToPage(safePage + 1)} disabled={safePage === totalPages} className="mc-page-btn"><ChevronRight size={14} /></button>
+                <button onClick={() => goToPage(totalPages)} disabled={safePage === totalPages} className="mc-page-btn edge"><ChevronsRight size={14} /></button>
               </div>
-
               <div className="mc-pagination-size"><span>{PAGE_SIZE} / hal</span></div>
             </div>
           )}
         </div>
       )}
 
-      {/* ================= MODALS ================= */}
+      {/* MODALS */}
       {showForm && <ItemForm item={editing} onClose={() => setShowForm(false)} onSaved={refetch} />}
       {showImport && <ImportCSV onClose={() => setShowImport(false)} onImported={refetch} />}
-
-      {/* ✅ MODAL KONFIRMASI HAPUS BARU (Mewajibkan Alasan) */}
       {confirmDelete && (
         <DeleteItemModal
           item={confirmDelete}
           onClose={() => setConfirmDelete(null)}
-          onSuccess={() => {
-            setConfirmDelete(null);
-            refetch();
-          }}
+          onSuccess={() => { setConfirmDelete(null); refetch(); }}
         />
       )}
     </div>
@@ -513,6 +396,7 @@ function buildPageNumbers(current, total) {
   return pages;
 }
 
+// ItemsStyles tetap sama seperti kode sebelumnya, tidak perlu diubah.
 /* ============================================================
    Styles — Tema Landing (Gold/Maroon/Navy)
 ============================================================ */

@@ -10,7 +10,6 @@ export function useItems({ search = "", categoryId = null, locationId = null } =
     setLoading(true);
     setError(null);
 
-    // Query join ke item_units untuk hitung jumlah unit
     let query = supabase
       .from("items")
       .select(`
@@ -30,16 +29,22 @@ export function useItems({ search = "", categoryId = null, locationId = null } =
     if (error) {
       setError(error.message);
     } else {
-      // Proses data: hitung total unit & ringkasan kondisi
       const processed = (data || []).map((it) => {
         const units = it.item_units || [];
         const total = units.length;
         const baik = units.filter(u => u.condition === 'baik').length;
         const rusak = units.filter(u => u.condition !== 'baik').length;
+        
+        // ✅ TAMBAHKAN: Hitung jumlah unit yang dipinjam dan aktif
+        const dipinjam = units.filter(u => u.status === 'dipinjam').length;
+        const active = units.filter(u => u.status === 'active').length;
+
         return {
           ...it,
           total_units: total,
-          condition_summary: { baik, rusak }
+          condition_summary: { baik, rusak },
+          // ✅ TAMBAHKAN: Simpan ringkasan status
+          status_summary: { dipinjam, active }
         };
       });
       setItems(processed);

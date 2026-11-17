@@ -3,7 +3,7 @@ import {
   Plus, Upload, Search, PackageSearch, Sparkles,
   X, Box, Tag, MapPin, CheckCircle2, AlertTriangle,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
-  Command, Filter, SlidersHorizontal,
+  Command, Filter, SlidersHorizontal, RotateCcw,
   ArrowUpDown, ChevronDown, ChevronUp,
   LayoutGrid, ArrowUpRight, Activity
 } from "lucide-react";
@@ -51,7 +51,7 @@ export default function Items() {
   const [filterLocation, setFilterLocation] = useState("all");
   const [filterCondition, setFilterCondition] = useState("all");
   const [filterUnit, setFilterUnit] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("all"); // ✅ Filter Status Baru
+  const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [sortDir, setSortDir] = useState("asc");
   const [showFilters, setShowFilters] = useState(false);
@@ -103,7 +103,7 @@ export default function Items() {
       if (filterCondition === "has_damage" && rusakCount === 0) return false;
       if (filterCondition === "no_damage" && rusakCount > 0) return false;
 
-      // ✅ Logika Filter Status (Dipinjam)
+      // ✅ Filter Status (Dipinjam)
       if (filterStatus !== "all") {
         const statusSummary = it.status_summary || {};
         if (filterStatus === "dipinjam" && !statusSummary.dipinjam) return false;
@@ -161,7 +161,7 @@ export default function Items() {
     filterLocation !== "all",
     filterCondition !== "all",
     filterUnit !== "all",
-    filterStatus !== "all", // ✅
+    filterStatus !== "all",
   ].filter(Boolean).length;
 
   const resetFilters = () => {
@@ -169,7 +169,7 @@ export default function Items() {
     setFilterLocation("all");
     setFilterCondition("all");
     setFilterUnit("all");
-    setFilterStatus("all"); // ✅
+    setFilterStatus("all");
     setSearch("");
     setPage(1);
   };
@@ -177,7 +177,7 @@ export default function Items() {
   const openAdd = () => { setEditing(null); setShowForm(true); };
 
   const handleDeleteClick = (item) => { setConfirmDelete(item); };
-  const handleEditClick = (item) => { setEditing(item); setShowForm(true); }; // ✅ Fungsi Edit
+  const handleEditClick = (item) => { setEditing(item); setShowForm(true); };
 
   return (
     <div className={`mc-items ${mounted ? "is-mounted" : ""}`}>
@@ -232,83 +232,121 @@ export default function Items() {
         </button>
       </div>
 
-      {/* FILTER PANEL */}
+      {/* ✅ FILTER PANEL BARU (RAPIH) */}
       {showFilters && (
         <div className="mc-filter-panel">
-          <div className="mc-filter-grid">
-            <div className="mc-filter-field">
-              <label><Tag size={12} /> Kategori</label>
-              <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="mc-filter-select">
-                <option value="all">Semua Kategori</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+          {/* Panel Header */}
+          <div className="mc-filter-panel-head">
+            <div className="mc-filter-panel-title">
+              <Filter size={14} /> Filter & Urutkan
             </div>
-            <div className="mc-filter-field">
-              <label><MapPin size={12} /> Lokasi</label>
-              <select value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)} className="mc-filter-select">
-                <option value="all">Semua Lokasi</option>
-                {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-              </select>
+            <button onClick={() => setShowFilters(false)} className="mc-filter-panel-close">
+              <X size={16} />
+            </button>
+          </div>
+
+          <div className="mc-filter-content">
+            {/* KELOMPOK FILTER */}
+            <div className="mc-filter-group">
+              <span className="mc-filter-group-label">Penyaringan Data</span>
+              <div className="mc-filter-grid">
+                
+                <div className="mc-filter-field">
+                  <label><Tag size={12} /> Kategori</label>
+                  <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="mc-filter-select">
+                    <option value="all">Semua Kategori</option>
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+
+                <div className="mc-filter-field">
+                  <label><MapPin size={12} /> Lokasi</label>
+                  <select value={filterLocation} onChange={(e) => setFilterLocation(e.target.value)} className="mc-filter-select">
+                    <option value="all">Semua Lokasi</option>
+                    {locations.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                  </select>
+                </div>
+
+                <div className="mc-filter-field">
+                  <label><Activity size={12} /> Status</label>
+                  <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="mc-filter-select">
+                    <option value="all">Semua Status</option>
+                    <option value="active">Tersedia (Aktif)</option>
+                    <option value="dipinjam">Sedang Dipinjam</option>
+                  </select>
+                </div>
+
+                <div className="mc-filter-field">
+                  <label><AlertTriangle size={12} /> Kondisi</label>
+                  <select value={filterCondition} onChange={(e) => setFilterCondition(e.target.value)} className="mc-filter-select">
+                    <option value="all">Semua Kondisi</option>
+                    <option value="has_damage">Ada Kerusakan</option>
+                    <option value="no_damage">Semua Baik</option>
+                  </select>
+                </div>
+
+                <div className="mc-filter-field">
+                  <label><Box size={12} /> Unit Fisik</label>
+                  <select value={filterUnit} onChange={(e) => setFilterUnit(e.target.value)} className="mc-filter-select">
+                    <option value="all">Semua Unit</option>
+                    <option value="has_unit">Punya Unit</option>
+                    <option value="no_unit">Belum Punya</option>
+                  </select>
+                </div>
+
+              </div>
             </div>
-            <div className="mc-filter-field">
-              <label><Activity size={12} /> Status</label>
-              <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="mc-filter-select">
-                <option value="all">Semua Status</option>
-                <option value="active">Tersedia (Aktif)</option>
-                <option value="dipinjam">Sedang Dipinjam</option>
-              </select>
-            </div>
-            <div className="mc-filter-field">
-              <label><AlertTriangle size={12} /> Kondisi</label>
-              <select value={filterCondition} onChange={(e) => setFilterCondition(e.target.value)} className="mc-filter-select">
-                <option value="all">Semua Kondisi</option>
-                <option value="has_damage">Ada Kerusakan</option>
-                <option value="no_damage">Semua Baik</option>
-              </select>
-            </div>
-            <div className="mc-filter-field">
-              <label><Box size={12} /> Unit Fisik</label>
-              <select value={filterUnit} onChange={(e) => setFilterUnit(e.target.value)} className="mc-filter-select">
-                <option value="all">Semua</option>
-                <option value="has_unit">Punya Unit</option>
-                <option value="no_unit">Belum Punya</option>
-              </select>
-            </div>
-            <div className="mc-filter-field">
-              <label><ArrowUpDown size={12} /> Urutkan</label>
-              <div className="mc-sort-group">
-                <select value={sortBy} onChange={(e) => { setSortBy(e.target.value); setPage(1); }} className="mc-filter-select">
-                  <option value="name">Nama</option>
-                  <option value="category">Kategori</option>
-                  <option value="location">Lokasi</option>
-                  <option value="units">Jumlah Unit</option>
-                </select>
-                <button onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")} className="mc-sort-dir">
-                  {sortDir === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                </button>
+
+            {/* KELOMPOK URUTAN */}
+            <div className="mc-filter-group">
+              <span className="mc-filter-group-label">Urutan Tampilan</span>
+              <div className="mc-sort-wrapper">
+                <div className="mc-filter-field">
+                  <label><ArrowUpDown size={12} /> Urutkan Berdasarkan</label>
+                  <div className="mc-sort-group">
+                    <select value={sortBy} onChange={(e) => { setSortBy(e.target.value); setPage(1); }} className="mc-filter-select">
+                      <option value="name">Nama Barang</option>
+                      <option value="category">Kategori</option>
+                      <option value="location">Lokasi</option>
+                      <option value="units">Jumlah Unit</option>
+                    </select>
+                    <button 
+                      onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")} 
+                      className="mc-sort-dir"
+                      title={sortDir === "asc" ? "Menaik (A-Z)" : "Menurun (Z-A)"}
+                    >
+                      {sortDir === "asc" ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
+          {/* CHIP FILTER AKTIF */}
           {activeFilterCount > 0 && (
-            <div className="mc-active-filters">
-              <span className="mc-active-label"><Filter size={11} /> Filter aktif:</span>
-              {filterCategory !== "all" && (
-                <span className="mc-filter-chip"><Tag size={10} /> {categories.find(c => c.id === filterCategory)?.name || "Kategori"}<button onClick={() => setFilterCategory("all")}><X size={10} /></button></span>
-              )}
-              {filterLocation !== "all" && (
-                <span className="mc-filter-chip"><MapPin size={10} /> {locations.find(l => l.id === filterLocation)?.name || "Lokasi"}<button onClick={() => setFilterLocation("all")}><X size={10} /></button></span>
-              )}
-              {filterStatus !== "all" && (
-                <span className="mc-filter-chip"><Activity size={10} /> {filterStatus === "dipinjam" ? "Dipinjam" : "Aktif"}<button onClick={() => setFilterStatus("all")}><X size={10} /></button></span>
-              )}
-              {filterCondition !== "all" && (
-                <span className="mc-filter-chip"><AlertTriangle size={10} /> {filterCondition === "has_damage" ? "Ada Kerusakan" : "Semua Baik"}<button onClick={() => setFilterCondition("all")}><X size={10} /></button></span>
-              )}
-              {filterUnit !== "all" && (
-                <span className="mc-filter-chip"><Box size={10} /> {filterUnit === "has_unit" ? "Punya Unit" : "Belum Punya"}<button onClick={() => setFilterUnit("all")}><X size={10} /></button></span>
-              )}
-              <button onClick={resetFilters} className="mc-reset-btn"><X size={11} /> Reset</button>
+            <div className="mc-active-filters-wrap">
+              <div className="mc-active-filters">
+                <span className="mc-active-label">Filter Aktif:</span>
+                {filterCategory !== "all" && (
+                  <span className="mc-filter-chip"><Tag size={10} /> {categories.find(c => c.id === filterCategory)?.name || "Kategori"}<button onClick={() => setFilterCategory("all")}><X size={10} /></button></span>
+                )}
+                {filterLocation !== "all" && (
+                  <span className="mc-filter-chip"><MapPin size={10} /> {locations.find(l => l.id === filterLocation)?.name || "Lokasi"}<button onClick={() => setFilterLocation("all")}><X size={10} /></button></span>
+                )}
+                {filterStatus !== "all" && (
+                  <span className="mc-filter-chip"><Activity size={10} /> {filterStatus === "dipinjam" ? "Dipinjam" : "Aktif"}<button onClick={() => setFilterStatus("all")}><X size={10} /></button></span>
+                )}
+                {filterCondition !== "all" && (
+                  <span className="mc-filter-chip"><AlertTriangle size={10} /> {filterCondition === "has_damage" ? "Ada Kerusakan" : "Semua Baik"}<button onClick={() => setFilterCondition("all")}><X size={10} /></button></span>
+                )}
+                {filterUnit !== "all" && (
+                  <span className="mc-filter-chip"><Box size={10} /> {filterUnit === "has_unit" ? "Punya Unit" : "Belum Punya"}<button onClick={() => setFilterUnit("all")}><X size={10} /></button></span>
+                )}
+              </div>
+              <button onClick={resetFilters} className="mc-reset-btn">
+                <RotateCcw size={12} /> Reset Semua
+              </button>
             </div>
           )}
         </div>
@@ -321,7 +359,7 @@ export default function Items() {
         <div className="mc-empty">
           <div className="mc-empty-glow" /><div className="mc-empty-icon"><PackageSearch size={40} /></div>
           <h3 className="mc-empty-title">{(search || activeFilterCount > 0) ? "Tidak ada hasil" : "Belum ada data barang"}</h3>
-          <p className="mc-empty-sub">{(search || activeFilterCount > 0) ? "Tidak ditemukan barang cocok." : "Silakan tambahkan barang baru."}</p>
+          <p className="mc-empty-sub">{(search || activeFilterCount > 0) ? "Tidak ditemukan barang cocok dengan filter." : "Silakan tambahkan barang baru."}</p>
           {(search || activeFilterCount > 0) ? (
             <button onClick={resetFilters} className="mc-empty-btn">Reset filter</button>
           ) : canWrite ? (
@@ -345,7 +383,7 @@ export default function Items() {
               items={paginatedItems}
               loading={loading}
               onDeleteClick={handleDeleteClick}
-              onEditClick={handleEditClick} // ✅ Prop Edit
+              onEditClick={handleEditClick}
               canWrite={canWrite}
             />
           </div>
@@ -396,7 +434,6 @@ function buildPageNumbers(current, total) {
   return pages;
 }
 
-// ItemsStyles tetap sama seperti kode sebelumnya, tidak perlu diubah.
 /* ============================================================
    Styles — Tema Landing (Gold/Maroon/Navy)
 ============================================================ */
@@ -687,113 +724,161 @@ function ItemsStyles() {
         .mc-filter-toggle { padding: 0.7rem 1rem; justify-content: center; }
       }
 
-      /* FILTER PANEL */
+      /* ✅ PANEL FILTER BARU */
       .mc-filter-panel {
-        background: var(--surface); border: 1px solid var(--border);
-        border-radius: 14px; padding: 1rem;
+        background: var(--surface); 
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 8px 24px -12px rgba(0,0,0,0.1);
         animation: panel-in 0.3s var(--ease-out, cubic-bezier(0.16,1,0.3,1));
-        display: flex; flex-direction: column; gap: 0.85rem;
-        position: relative; overflow: hidden;
-      }
-      .mc-filter-panel::before {
-        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-        background: linear-gradient(90deg, transparent, var(--gold), transparent);
-        opacity: 0.6;
+        overflow: hidden;
       }
       @keyframes panel-in {
-        from { opacity: 0; transform: translateY(-6px); }
+        from { opacity: 0; transform: translateY(-8px); }
         to { opacity: 1; transform: translateY(0); }
       }
-      .mc-filter-grid {
-        display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;
+
+      .mc-filter-panel-head {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0.85rem 1.25rem;
+        background: var(--background);
+        border-bottom: 1px solid var(--border);
       }
-      @media (min-width: 768px) {
+      .mc-filter-panel-title {
+        display: flex; align-items: center; gap: 0.4rem;
+        font-size: 0.85rem; font-weight: 800; color: var(--text-main);
+      }
+      .mc-filter-panel-title svg { color: var(--gold); }
+      .mc-filter-panel-close {
+        background: transparent; border: none; color: var(--text-muted);
+        cursor: pointer; display: flex; align-items: center; justify-content: center;
+        width: 28px; height: 28px; border-radius: 6px; transition: all 0.2s;
+      }
+      .mc-filter-panel-close:hover { background: rgba(239,68,68,0.1); color: #EF4444; }
+
+      .mc-filter-content {
+        padding: 1.25rem;
+        display: flex; flex-direction: column; gap: 1.25rem;
+      }
+
+      .mc-filter-group {
+        display: flex; flex-direction: column; gap: 0.75rem;
+      }
+      .mc-filter-group-label {
+        font-size: 0.7rem; font-weight: 800;
+        color: var(--text-muted);
+        text-transform: uppercase; letter-spacing: 0.08em;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px dashed var(--border);
+      }
+
+      .mc-filter-grid {
+        display: grid; 
+        grid-template-columns: repeat(1, 1fr); 
+        gap: 0.85rem;
+      }
+      @media (min-width: 640px) {
+        .mc-filter-grid { grid-template-columns: repeat(2, 1fr); }
+      }
+      @media (min-width: 900px) {
         .mc-filter-grid { grid-template-columns: repeat(3, 1fr); }
       }
-      @media (min-width: 1024px) {
+      @media (min-width: 1100px) {
         .mc-filter-grid { grid-template-columns: repeat(5, 1fr); }
       }
+
       .mc-filter-field { display: flex; flex-direction: column; gap: 0.35rem; }
       .mc-filter-field label {
         display: flex; align-items: center; gap: 0.3rem;
-        font-size: 0.68rem; font-weight: 700;
-        color: var(--text-muted);
-        text-transform: uppercase; letter-spacing: 0.05em;
+        font-size: 0.7rem; font-weight: 700;
+        color: var(--text-main);
       }
       .mc-filter-field label svg { color: var(--gold); }
+
       .mc-filter-select {
-        width: 100%; padding: 0.55rem 1.8rem 0.55rem 0.7rem;
-        border-radius: 9px; border: 1.5px solid var(--border);
+        width: 100%; padding: 0.65rem 2rem 0.65rem 0.85rem;
+        border-radius: 10px; border: 1.5px solid var(--border);
         background: var(--background); color: var(--text-main);
-        font-size: 0.82rem; font-weight: 600;
+        font-size: 0.85rem; font-weight: 600;
         font-family: inherit; cursor: pointer;
         transition: all 0.2s; appearance: none;
-        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
         background-repeat: no-repeat;
-        background-position: right 0.6rem center;
+        background-position: right 0.75rem center;
       }
       .mc-filter-select:focus {
         outline: none; border-color: var(--gold);
         box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 15%, transparent);
       }
-      .mc-sort-group { display: flex; gap: 0.3rem; }
+
+      .mc-sort-wrapper { max-width: 400px; }
+      .mc-sort-group { display: flex; gap: 0.4rem; }
       .mc-sort-group .mc-filter-select { flex: 1; }
       .mc-sort-dir {
-        width: 34px; border-radius: 9px;
+        width: 42px; border-radius: 10px;
         border: 1.5px solid var(--border);
         background: var(--background); color: var(--text-main);
         display: flex; align-items: center; justify-content: center;
         cursor: pointer; transition: all 0.2s; padding: 0;
       }
       .mc-sort-dir:hover {
-        border-color: color-mix(in srgb, var(--gold) 50%, var(--border));
+        border-color: var(--gold);
         color: var(--gold);
         background: var(--gold-soft);
       }
-      .mc-active-filters {
-        display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem;
-        padding-top: 0.75rem;
+
+      /* CHIP FILTER AKTIF */
+      .mc-active-filters-wrap {
+        display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.85rem 1.25rem;
+        background: var(--background);
         border-top: 1px dashed var(--border);
       }
+      .mc-active-filters {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem;
+      }
       .mc-active-label {
-        display: inline-flex; align-items: center; gap: 0.25rem;
-        font-size: 0.7rem; font-weight: 700;
+        font-size: 0.75rem; font-weight: 700;
         color: var(--text-muted); margin-right: 0.25rem;
       }
-      .mc-active-label svg { color: var(--gold); }
       .mc-filter-chip {
-        display: inline-flex; align-items: center; gap: 0.3rem;
-        padding: 0.25rem 0.4rem 0.25rem 0.55rem;
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        padding: 0.3rem 0.4rem 0.3rem 0.65rem;
         border-radius: 999px;
-        background: var(--gold-soft);
-        border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent);
-        color: var(--gold);
-        font-size: 0.7rem; font-weight: 700;
-        max-width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text-main);
+        font-size: 0.72rem; font-weight: 600;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
       }
+      .mc-filter-chip svg { color: var(--gold); }
       .mc-filter-chip button {
-        width: 16px; height: 16px; border-radius: 50%;
-        background: var(--gold); color: white; border: none;
+        width: 18px; height: 18px; border-radius: 50%;
+        background: var(--background); color: var(--text-muted); border: none;
         display: flex; align-items: center; justify-content: center;
         cursor: pointer; padding: 0; flex-shrink: 0;
         transition: all 0.15s;
       }
       .mc-filter-chip button:hover {
-        transform: scale(1.15);
-        background: var(--maroon-light);
+        background: #EF4444; color: white;
       }
       .mc-reset-btn {
-        display: inline-flex; align-items: center; gap: 0.3rem;
-        padding: 0.3rem 0.65rem; border-radius: 7px;
-        background: transparent; border: 1px solid var(--border);
-        color: var(--text-muted);
-        font-size: 0.7rem; font-weight: 700;
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        padding: 0.4rem 0.75rem; border-radius: 8px;
+        background: var(--surface); border: 1px solid var(--border);
+        color: #EF4444;
+        font-size: 0.75rem; font-weight: 700;
         cursor: pointer; transition: all 0.2s;
-        font-family: inherit; margin-left: auto;
+        font-family: inherit;
       }
       .mc-reset-btn:hover {
         background: rgba(239,68,68,0.08);
-        border-color: #EF4444; color: #DC2626;
+        border-color: #EF4444;
+      }
+      @media (max-width: 640px) {
+        .mc-active-filters-wrap { flex-direction: column; align-items: stretch; }
+        .mc-reset-btn { justify-content: center; }
       }
 
       /* SKELETON */

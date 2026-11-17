@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { QRCodeSVG } from "qrcode.react";
 import {
   X, QrCode, Package, CheckCircle2, AlertCircle,
@@ -88,7 +89,7 @@ export default function UnitForm({ unit, onClose, onSaved }) {
     onSaved?.();
   };
 
-  return (
+  return createPortal(
     <div
       className="mc-modal-backdrop"
       onClick={(e) => e.target === e.currentTarget && !saving && onClose?.()}
@@ -127,7 +128,7 @@ export default function UnitForm({ unit, onClose, onSaved }) {
           </div>
         </div>
 
-        {/* ============ BODY — 2 KOLOM ============ */}
+        {/* ============ BODY (SCROLLABLE) ============ */}
         <div className="mc-modal-body mc-body-grid">
           {error && (
             <div className="mc-error mc-span-full">
@@ -136,7 +137,7 @@ export default function UnitForm({ unit, onClose, onSaved }) {
             </div>
           )}
 
-          {/* KOLOM KIRI — QR & Preview */}
+          {/* KOLOM KIRI */}
           <div className="mc-col">
             <div className="mc-qr-panel">
               <div className="mc-qr-panel-head">
@@ -144,13 +145,11 @@ export default function UnitForm({ unit, onClose, onSaved }) {
                   <QrCode size={11} /> QR Code
                 </span>
               </div>
-
               <div className="mc-qr-panel-body">
                 <div className="mc-qr-box">
                   <QRCodeSVG value={unit.unit_code} size={140} level="M" />
                 </div>
               </div>
-
               <div className="mc-qr-panel-foot">
                 <p className="mc-qr-code">{unit.unit_code}</p>
                 <p className="mc-qr-hint">Scan untuk buka detail</p>
@@ -170,9 +169,8 @@ export default function UnitForm({ unit, onClose, onSaved }) {
             </div>
           </div>
 
-          {/* KOLOM KANAN — Form Edit */}
+          {/* KOLOM KANAN */}
           <div className="mc-col">
-            {/* Kondisi */}
             <div className="mc-field">
               <label className="mc-label">
                 <Sparkles size={12} />
@@ -203,7 +201,6 @@ export default function UnitForm({ unit, onClose, onSaved }) {
               </div>
             </div>
 
-            {/* Status */}
             <div className="mc-field">
               <label className="mc-label">
                 <Package size={12} />
@@ -232,7 +229,6 @@ export default function UnitForm({ unit, onClose, onSaved }) {
               </div>
             </div>
 
-            {/* Catatan */}
             <div className="mc-field">
               <label className="mc-label">
                 Catatan <span className="mc-label-opt">(opsional)</span>
@@ -282,7 +278,8 @@ export default function UnitForm({ unit, onClose, onSaved }) {
           </div>
         </div>
       </form>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -292,27 +289,65 @@ export default function UnitForm({ unit, onClose, onSaved }) {
 function UnitFormStyles() {
   return (
     <style>{`
-      /* ✅ MODAL SHELL - Memastikan di tengah & tidak melebihi layar */
+      /* ✅ 1. KUNCI UTAMA: Paksa Modal di Tengah & Pas di Layar */
       .mc-modal-wide { 
-        max-width: 720px; 
-        max-height: 90vh !important;
-        display: flex;
-        flex-direction: column;
+        max-width: 720px !important; 
+        width: 100% !important;
+        height: auto !important;
+        max-height: 85vh !important; /* Maksimal 85% dari tinggi layar */
+        
+        display: flex !important;
+        flex-direction: column !important;
+        margin: auto !important; /* Memastikan selalu di tengah */
+        overflow: hidden !important;
       }
+      
       @media (max-width: 720px) {
         .mc-modal-wide { 
-          max-width: 100%; 
-          margin: 0.5rem;
-          max-height: 95vh !important;
+          max-width: 100% !important; 
+          margin: 0.5rem !important;
+          max-height: 90vh !important;
         }
       }
 
-      /* Header blue variant */
+      /* ✅ 2. KUNCI KEDUA: Paksa Body Bisa Di-Scroll */
+      .mc-modal-body.mc-body-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1.2fr !important;
+        gap: 1.1rem !important;
+        align-items: start !important;
+        
+        /* Trik Flexbox agar muncul scrollbar, bukan mengecil */
+        flex: 1 1 auto !important; 
+        min-height: 0 !important; 
+        overflow-y: auto !important; 
+        
+        padding: 1.25rem !important;
+        background: var(--surface);
+      }
+      
+      @media (max-width: 720px) {
+        .mc-modal-body.mc-body-grid {
+          grid-template-columns: 1fr !important;
+        }
+      }
+
+      /* ✅ 3. KUNCI KETIGA: Header & Footer Tetap di Tempat */
+      .mc-modal-head {
+        flex-shrink: 0 !important;
+      }
+      .mc-modal-footer {
+        flex-shrink: 0 !important;
+        background: var(--background);
+        z-index: 10;
+      }
+
+      /* =========================================
+         STYLE LAINNYA (Header, QR, Field, dll)
+      ========================================= */
       .mc-head-blue {
         background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%) !important;
       }
-
-      /* Sub info di header */
       .mc-sub-dot {
         display: inline-block;
         width: 3px;
@@ -326,36 +361,13 @@ function UnitFormStyles() {
         font-size: 0.72rem;
         opacity: 0.9;
       }
-
-      /* ✅ BODY GRID - Bisa di-scroll */
-      .mc-body-grid {
-        display: grid;
-        grid-template-columns: 1fr 1.2fr;
-        gap: 1.1rem;
-        align-items: start; /* ✅ Mencegah stretching */
-        
-        /* ✅ Kunci scroll */
-        overflow-y: auto !important;
-        flex: 1;
-        padding: 1.25rem;
-        padding-bottom: 1rem;
-      }
-      @media (max-width: 720px) {
-        .mc-body-grid {
-          grid-template-columns: 1fr;
-          gap: 0.9rem;
-        }
-      }
-      .mc-span-full { grid-column: 1 / -1; }
-
+      .mc-span-full { grid-column: 1 / -1 !important; }
       .mc-col {
         display: flex;
         flex-direction: column;
         gap: 0.85rem;
         min-width: 0;
       }
-
-      /* Error */
       .mc-error {
         display: flex;
         align-items: flex-start;
@@ -374,8 +386,6 @@ function UnitFormStyles() {
         border-color: rgba(239, 68, 68, 0.25);
         color: #F87171;
       }
-
-      /* QR Panel */
       .mc-qr-panel {
         background: var(--surface);
         border: 1px solid var(--border);
@@ -439,8 +449,6 @@ function UnitFormStyles() {
         color: var(--text-muted);
         margin-top: 2px;
       }
-
-      /* Info card */
       .mc-info-card {
         display: flex;
         align-items: flex-start;
@@ -465,8 +473,6 @@ function UnitFormStyles() {
         font-size: 0.7rem;
         color: var(--text-muted);
       }
-
-      /* Fields */
       .mc-field { display: flex; flex-direction: column; }
       .mc-label {
         display: flex;
@@ -482,8 +488,6 @@ function UnitFormStyles() {
         color: var(--text-muted);
         font-size: 0.7rem;
       }
-
-      /* Options grid (kondisi) */
       .mc-options-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -517,8 +521,6 @@ function UnitFormStyles() {
         opacity: 0.6;
         cursor: not-allowed;
       }
-
-      /* Status chips */
       .mc-status-chips {
         display: flex;
         flex-wrap: wrap;
@@ -548,8 +550,6 @@ function UnitFormStyles() {
         opacity: 0.6;
         cursor: not-allowed;
       }
-
-      /* Textarea */
       .mc-textarea {
         width: 100%;
         background: var(--background);
@@ -571,8 +571,6 @@ function UnitFormStyles() {
       }
       .mc-textarea::placeholder { color: var(--text-muted); opacity: 0.6; }
       .mc-textarea:disabled { opacity: 0.6; cursor: not-allowed; }
-
-      /* Mobile */
       @media (max-width: 720px) {
         .mc-qr-box svg { width: 110px !important; height: 110px !important; }
       }

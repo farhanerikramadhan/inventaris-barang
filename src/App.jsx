@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
@@ -33,43 +34,60 @@ export default function App() {
 
   return (
     <Routes>
-      {/* ================= PUBLIC ROUTES ================= */}
+      {/* PUBLIC ROUTES */}
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* ================= PROTECTED: semua role ================= */}
-      <Route element={<ProtectedRoute allowedRoles={["super_admin", "admin", "viewer"]} />}>
+      {/* SEMUA ROLE: SUPER ADMIN, ADMIN, VIEWER */}
+      <Route
+        element={
+          <ProtectedRoute
+            allowedRoles={["super_admin", "admin", "viewer"]}
+          />
+        }
+      >
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/items" element={<Items />} />
-          <Route path="/items/:id" element={<ItemDetailPage />} />
-          <Route path="/units/:id" element={<UnitDetailPage />} />
           <Route path="/scan" element={<Scan />} />
           <Route path="/print" element={<Print />} />
           <Route path="/reports" element={<Reports />} />
         </Route>
       </Route>
 
-      {/* ================= PROTECTED: admin & super_admin ================= */}
-      <Route element={<ProtectedRoute allowedRoles={["super_admin", "admin"]} />}>
+      {/* ADMIN DAN SUPER ADMIN */}
+      <Route
+        element={
+          <ProtectedRoute allowedRoles={["super_admin", "admin"]} />
+        }
+      >
         <Route element={<AppLayout />}>
+          <Route path="/items" element={<Items />} />
+          <Route path="/items/:id" element={<ItemDetailPage />} />
+          <Route path="/units/:id" element={<UnitDetailPage />} />
+
           <Route path="/categories" element={<Categories />} />
           <Route path="/locations" element={<Locations />} />
           <Route path="/activity" element={<ActivityLog />} />
         </Route>
       </Route>
 
-      {/* ================= PROTECTED: super_admin only ================= */}
-      <Route element={<ProtectedRoute allowedRoles={["super_admin"]} />}>
+      {/* SUPER ADMIN SAJA */}
+      <Route
+        element={
+          <ProtectedRoute allowedRoles={["super_admin"]} />
+        }
+      >
         <Route element={<AppLayout />}>
           <Route path="/users" element={<Users />} />
         </Route>
       </Route>
 
-      {/* ================= FALLBACK ================= */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* PRINT LAPORAN */}
       <Route path="/reports/print" element={<ReportsPrint />} />
+
+      {/* FALLBACK */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

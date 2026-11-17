@@ -128,19 +128,24 @@ export default function ItemTable({ items, loading, onDeleteClick, canWrite }) {
                     )}
                   </td>
 
-                  {/* Aksi */}
+                  {/* Aksi (Diperbarui) */}
                   <td className="text-right">
                     <div className="mc-action-wrap">
-                      <Link to={`/items/${item.id}`} className="mc-act-btn primary">
-                        <Eye size={13} /> Detail
+                      <Link 
+                        to={`/items/${item.id}`} 
+                        className="mc-act-btn primary"
+                        title="Lihat Detail"
+                      >
+                        <Eye size={14} /> 
+                        <span>Detail</span>
                       </Link>
                       {canWrite && (
                         <button
                           onClick={() => onDeleteClick?.(item)}
                           className="mc-act-btn danger"
-                          title="Hapus barang"
+                          title="Hapus Barang"
                         >
-                          <Trash2 size={13} />
+                          <Trash2 size={15} />
                         </button>
                       )}
                     </div>
@@ -316,50 +321,61 @@ function ItemTableStyles() {
         font-style: italic;
       }
 
+      /* ✅ ACTION BUTTONS DIPERBARUI */
       .mc-action-wrap {
-        display: inline-flex; align-items: center; gap: 0.35rem;
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        justify-content: flex-end;
       }
+      
       .mc-act-btn {
         display: inline-flex; align-items: center; justify-content: center;
         gap: 0.35rem;
-        padding: 0.4rem 0.75rem;
         border-radius: 8px;
         font-size: 0.75rem;
         font-weight: 700;
-        border: 1.5px solid;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
         text-decoration: none;
         white-space: nowrap;
         font-family: inherit;
+        position: relative;
+        overflow: hidden;
       }
+
+      /* Tombol Detail */
       .mc-act-btn.primary {
+        padding: 0.45rem 0.85rem;
         background: var(--surface);
         color: var(--text-main);
-        border-color: var(--border);
+        border: 1.5px solid var(--border);
       }
       .mc-act-btn.primary:hover {
         background: var(--gold);
         color: white;
         border-color: var(--gold);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px -2px color-mix(in srgb, var(--gold) 40%, transparent);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px -4px color-mix(in srgb, var(--gold) 50%, transparent);
       }
-      .mc-act-btn.primary:hover svg { color: white; }
+      .mc-act-btn.primary:hover svg { stroke: white; }
+      .mc-act-btn.primary:active { transform: translateY(0); }
+
+      /* Tombol Hapus (Danger) */
       .mc-act-btn.danger {
+        width: 34px;
+        height: 34px;
+        padding: 0;
         background: transparent;
         color: var(--text-muted);
-        border-color: transparent;
-        padding: 0.4rem;
-        width: 32px;
-        height: 32px;
+        border: 1.5px solid transparent;
       }
       .mc-act-btn.danger:hover {
-        background: rgba(239,68,68,0.1);
+        background: rgba(239,68,68,0.08);
         color: #EF4444;
-        border-color: rgba(239,68,68,0.3);
-        transform: scale(1.1);
+        border-color: rgba(239,68,68,0.25);
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 4px 12px -2px rgba(239,68,68,0.2);
       }
+      .mc-act-btn.danger:active { transform: scale(0.95); }
 
       .mc-skeleton { padding: 0; }
       .mc-skel-head {
@@ -382,6 +398,8 @@ function ItemTableStyles() {
 
       @media (max-width: 640px) {
         .mc-table th, .mc-table td { padding: 0.7rem 0.85rem; }
+        .mc-act-btn.primary span { display: none; } /* Sembunyikan teks "Detail" di HP */
+        .mc-act-btn.primary { padding: 0.45rem; width: 34px; height: 34px; }
       }
     `}</style>
   );

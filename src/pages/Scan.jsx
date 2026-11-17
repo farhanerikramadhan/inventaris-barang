@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import {
   ScanLine, AlertCircle, CheckCircle2, X,
-  Copy, Check, History, Trash2, Bug, FileText, Sparkles
+  Copy, Check, History, Trash2, Bug, FileText, Sparkles,
+  ChevronLeft, ChevronRight
 } from "lucide-react";
 import QRScanner from "../components/qr/QRScanner";
 
@@ -14,12 +15,22 @@ export default function Scan() {
   const [showDebug, setShowDebug] = useState(false);
 
   const lastResultRef = useRef({ text: "", at: 0 });
+  const historyScrollRef = useRef(null);
 
-  // ✅ TAMBAHAN: Pastikan tidak ada sisa proses saat pindah halaman
+  // ✅ Fungsi untuk scroll slider riwayat
+  const scrollHistory = (direction) => {
+    if (historyScrollRef.current) {
+      const scrollAmount = 250;
+      historyScrollRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth"
+      });
+    }
+  };
+
+  // Bersihkan kamera saat pindah halaman
   useEffect(() => {
     return () => {
-      console.log("Keluar dari halaman Scan...");
-      // Memaksa browser untuk melepas izin kamera secara paksa (jika masih nyangkut)
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia({ video: true })
           .then(stream => {
@@ -200,7 +211,7 @@ export default function Scan() {
         )
       )}
 
-      {/* HISTORY */}
+      {/* ✅ RIWAYAT SLIDER */}
       {history.length > 0 && (
         <section className="scan-history">
           <div className="scan-history-top">
@@ -214,17 +225,35 @@ export default function Scan() {
             </button>
           </div>
 
-          <div className="scan-history-list">
-            {history.map((text, i) => (
-              <button
-                key={i}
-                onClick={() => setResult(text)}
-                className={`scan-history-item ${result === text ? "is-active" : ""}`}
-              >
-                <span className="scan-history-index">#{history.length - i}</span>
-                <span className="scan-history-text">{text}</span>
-              </button>
-            ))}
+          <div className="scan-slider-wrapper">
+            <button 
+              className="scan-slider-btn left" 
+              onClick={() => scrollHistory("left")}
+              aria-label="Geser ke kiri"
+            >
+              <ChevronLeft size={16} />
+            </button>
+
+            <div className="scan-slider" ref={historyScrollRef}>
+              {history.map((text, i) => (
+                <button
+                  key={i}
+                  onClick={() => setResult(text)}
+                  className={`scan-slider-card ${result === text ? "is-active" : ""}`}
+                >
+                  <span className="scan-slider-index">#{history.length - i}</span>
+                  <span className="scan-slider-text">{text}</span>
+                </button>
+              ))}
+            </div>
+
+            <button 
+              className="scan-slider-btn right" 
+              onClick={() => scrollHistory("right")}
+              aria-label="Geser ke kanan"
+            >
+              <ChevronRight size={16} />
+            </button>
           </div>
         </section>
       )}
@@ -474,10 +503,11 @@ function PageStyles() {
       .scan-empty p { margin: 0.3rem 0 0; font-size: 0.88rem; font-weight: 700; color: var(--text-main); }
       .scan-empty span { font-size: 0.78rem; }
 
-      /* ===== HISTORY ===== */
+      /* ===== ✅ HISTORY SLIDER ===== */
       .scan-history {
         background: var(--surface); border: 1px solid var(--border);
         border-radius: 16px; padding: 0.95rem;
+        overflow: hidden;
       }
       .scan-history-top {
         display: flex; justify-content: space-between; align-items: center;
@@ -494,36 +524,77 @@ function PageStyles() {
         border-radius: 999px; border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent);
       }
 
-      .scan-history-list {
-        display: flex; flex-direction: column; gap: 0.35rem;
-        max-height: 220px; overflow: auto;
+      .scan-slider-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        margin: 0 -0.5rem;
       }
-      .scan-history-item {
-        display: flex; align-items: center; gap: 0.55rem;
-        padding: 0.55rem 0.7rem; border-radius: 9px;
-        background: var(--background); border: 1px solid var(--border);
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 0.74rem; font-weight: 600; color: var(--text-main);
-        cursor: pointer; text-align: left; width: 100%;
+
+      .scan-slider {
+        display: flex;
+        gap: 0.5rem;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding: 0.25rem 0.5rem 0.75rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+        -webkit-overflow-scrolling: touch;
+      }
+      .scan-slider::-webkit-scrollbar { height: 4px; }
+      .scan-slider::-webkit-scrollbar-track { background: transparent; }
+      .scan-slider::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+      .scan-slider-btn {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; position: absolute;
+        z-index: 10;
         transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       }
-      .scan-history-item:hover {
-        border-color: color-mix(in srgb, var(--gold) 35%, var(--border));
-        transform: translateX(2px);
+      .scan-slider-btn:hover {
+        background: var(--gold); color: white; border-color: var(--gold);
       }
-      .scan-history-item.is-active {
-        background: var(--gold-soft);
+      .scan-slider-btn.left { left: 0; }
+      .scan-slider-btn.right { right: 0; }
+
+      .scan-slider-card {
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+        display: flex; align-items: center; gap: 0.6rem;
+        padding: 0.65rem 0.85rem;
+        border-radius: 10px;
+        background: var(--background);
+        border: 1px solid var(--border);
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 140px;
+        max-width: 240px;
+      }
+      .scan-slider-card:hover {
         border-color: var(--gold);
-        box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 15%, transparent);
+        background: var(--gold-soft);
+        transform: translateY(-2px);
       }
-      .scan-history-index {
-        font-size: 0.66rem; font-weight: 800; color: var(--gold);
-        background: color-mix(in srgb, var(--gold) 12%, transparent);
-        padding: 0.1rem 0.4rem; border-radius: 5px;
+      .scan-slider-card.is-active {
+        border-color: var(--gold);
+        background: var(--gold-soft);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 20%, transparent);
+      }
+      .scan-slider-index {
+        font-size: 0.65rem; font-weight: 800; color: var(--gold);
+        background: color-mix(in srgb, var(--gold) 15%, transparent);
+        padding: 0.1rem 0.35rem; border-radius: 4px;
         flex-shrink: 0;
       }
-      .scan-history-text {
-        flex: 1; min-width: 0;
+      .scan-slider-text {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem; font-weight: 600; color: var(--text-main);
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
 

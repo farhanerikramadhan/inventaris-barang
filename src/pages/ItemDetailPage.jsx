@@ -12,7 +12,7 @@ import { useAuthStore } from "../stores/authStore";
 import UnitTable from "../components/items/UnitTable";
 import StockOutForm from "../components/items/StockOutForm";
 import StockInForm from "../components/items/StockInForm";
-import ItemForm from "../components/items/ItemForm"; // Pastikan path ini benar
+import ItemForm from "../components/items/ItemForm";
 
 const CONDITION_META = {
   baik:         { label: "Baik",          color: "#10B981", bg: "rgba(16,185,129,0.12)" },
@@ -69,7 +69,6 @@ export default function ItemDetailPage() {
     fetchItemData();
   }, [id]);
 
-  // ── Statistik ──
   const stats = useMemo(() => {
     const totalUnit = units.length;
     const baik = units.filter(u => u.condition === "baik").length;
@@ -79,7 +78,6 @@ export default function ItemDetailPage() {
     return { totalUnit, baik, rusakRingan, rusakBerat, persenBaik };
   }, [units]);
 
-  // ── Skeleton ──
   if (loading) {
     return (
       <div className="mc-item">
@@ -92,7 +90,6 @@ export default function ItemDetailPage() {
     );
   }
 
-  // ── Empty state ──
   if (!item) {
     return (
       <div className="mc-item">
@@ -117,7 +114,7 @@ export default function ItemDetailPage() {
     <div className={`mc-item ${mounted ? "is-mounted" : ""}`}>
       <ItemStyles />
 
-      {/* ================= 1. TOP NAV ================= */}
+      {/* TOP NAV */}
       <div className="mc-top-nav">
         <nav className="mc-breadcrumb">
           <Link to="/items" className="mc-breadcrumb-link">
@@ -128,7 +125,6 @@ export default function ItemDetailPage() {
         </nav>
 
         <div className="mc-action-bar">
-          {/* ✅ TOMBOL EDIT BARANG BARU */}
           {canWrite && (
             <button onClick={() => setShowEdit(true)} className="mc-btn-secondary">
               <Pencil size={16} /> Edit Barang
@@ -158,7 +154,7 @@ export default function ItemDetailPage() {
         </div>
       </div>
 
-      {/* ================= 2. HERO ================= */}
+      {/* HERO */}
       <div className="mc-hero">
         <div className="mc-hero-bg">
           <div className="mc-hero-glow-1" />
@@ -167,7 +163,6 @@ export default function ItemDetailPage() {
         </div>
 
         <div className="mc-hero-inner">
-          {/* Kiri: info utama */}
           <div className="mc-hero-main">
             <div className="mc-hero-eyebrow">
               <Sparkles size={12} /> Detail Barang
@@ -195,9 +190,7 @@ export default function ItemDetailPage() {
             )}
           </div>
 
-          {/* Kanan: stat cards */}
           <div className="mc-hero-stats">
-            {/* Total Unit */}
             <div className="mc-stat-box">
               <div className="mc-stat-box-head">
                 <span className="mc-stat-box-icon neutral">
@@ -209,7 +202,6 @@ export default function ItemDetailPage() {
               <p className="mc-stat-box-hint">unit fisik terdaftar</p>
             </div>
 
-            {/* Kondisi Baik */}
             <div className="mc-stat-box">
               <div className="mc-stat-box-head">
                 <span className="mc-stat-box-icon good">
@@ -245,7 +237,7 @@ export default function ItemDetailPage() {
         </div>
       </div>
 
-      {/* ================= 3. TABS ================= */}
+      {/* TABS */}
       <div className="mc-tabs">
         <button
           onClick={() => setActiveTab("units")}
@@ -262,7 +254,7 @@ export default function ItemDetailPage() {
         </button>
       </div>
 
-      {/* ================= 4. KONTEN TAB ================= */}
+      {/* KONTEN TAB */}
       <div className="mc-tab-content">
         {activeTab === "units" && (
           <div className="mc-tab-inner">
@@ -286,7 +278,7 @@ export default function ItemDetailPage() {
         )}
       </div>
 
-      {/* ================= MODALS ================= */}
+      {/* MODALS */}
       {showStockOut && (
         <StockOutForm
           item={item}
@@ -303,14 +295,13 @@ export default function ItemDetailPage() {
         />
       )}
 
-      {/* ✅ MODAL EDIT BARANG */}
       {showEdit && (
         <ItemForm
           item={item}
           onClose={() => setShowEdit(false)}
           onSaved={() => {
             setShowEdit(false);
-            fetchItemData(); // Refresh data setelah disimpan
+            fetchItemData();
           }}
         />
       )}
